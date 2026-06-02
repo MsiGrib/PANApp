@@ -1,0 +1,136 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:PANApp.ViewModels"
+             xmlns:models="using:PANApp.Models"
+             xmlns:az="clr-namespace:Avalonia.Controls.PanAndZoom;assembly=Avalonia.Controls.PanAndZoom"
+             mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+             x:Class="PANApp.Views.ProjectAnalyzerView"
+             x:DataType="vm:ProjectAnalyzerViewModel">
+
+    <Grid ColumnDefinitions="300,*" Margin="10">
+        <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="1" CornerRadius="5" Margin="0,0,10,0">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="Профили проектов" FontSize="16" FontWeight="Bold" Margin="10"/>
+                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="10" Spacing="5">
+                    <Button Content="Сcreate" Command="{Binding CreateProfileCommand}" Classes="accent"/>
+                    <Button Content="Удалить" Command="{Binding DeleteProfileCommand}"/>
+                    <Button Content="Сохранить" Command="{Binding SaveProfilesCommand}"/>
+                </StackPanel>
+                <ListBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}" Margin="10,0,10,10">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="models:ProjectProfile">
+                            <StackPanel Margin="5">
+                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding Language}" FontSize="11" Foreground="Gray"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <Grid Grid.Column="1" RowDefinitions="Auto,*">
+            <Border Grid.Row="0" BorderBrush="Gray" BorderThickness="1" CornerRadius="5" Padding="15" Margin="0,0,0,10"
+                    IsVisible="{Binding SelectedProfile, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Детали профиля" FontSize="16" FontWeight="Bold"/>
+                    <Grid ColumnDefinitions="100,*" RowDefinitions="Auto,Auto,Auto" Margin="0,10,0,0">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Название:" VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding SelectedProfile.Name}" Margin="10,0,0,0"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Язык:" VerticalAlignment="Center" Margin="0,10,0,0"/>
+                        <ComboBox Grid.Row="1" Grid.Column="1" SelectedItem="{Binding SelectedProfile.Language}" Margin="10,10,0,0">
+                            <x:String>C#</x:String>
+                            <x:String>Python</x:String>
+                        </ComboBox>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Путь:" VerticalAlignment="Center" Margin="0,10,0,0"/>
+                        <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="*,Auto" Margin="10,10,0,0">
+                            <TextBox Grid.Column="0" Text="{Binding SelectedProfile.ProjectPath}"/>
+                            <Button Grid.Column="1" Content="Обзор..." Command="{Binding BrowseFolderCommand}" Margin="5,0,0,0"/>
+                        </Grid>
+                    </Grid>
+                    <Button Content="▶ Анализировать проект" Command="{Binding AnalyzeProjectCommand}"
+                            Classes="accent" HorizontalAlignment="Left" Margin="0,10,0,0"/>
+                </StackPanel>
+            </Border>
+
+    <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="1" CornerRadius="5" Padding="10" ClipToBounds="True">
+        <DockPanel>
+            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
+                <TextBlock Text="Граф зависимостей модулей" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBlock Text="(Колесо мыши — зум, ПКМ/СКМ — перемещение)" FontSize="11" Foreground="Gray" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <ProgressBar DockPanel.Dock="Bottom" IsIndeterminate="True" IsVisible="{Binding IsAnalyzing}" Height="4"/>
+
+            <az:ZoomBorder ZoomSpeed="1.2"
+                           MinZoomX="0.1" MinZoomY="0.1"
+                           MaxZoomX="5.0" MaxZoomY="5.0"
+                           Background="Transparent">
+
+                <Panel Width="4000" Height="4000" Background="#1E1E1E">
+
+                    <ItemsControl ItemsSource="{Binding GraphEdges}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Canvas Width="4000" Height="4000"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="models:GraphEdge">
+                                <Panel>
+                                    <Line StartPoint="{Binding StartPoint}"
+                                          EndPoint="{Binding EndPoint}"
+                                          Stroke="#78909C"
+                                          StrokeThickness="1.5"/>
+                                    <Path Data="M 0,0 L -8,-4 L -8,4 Z" Fill="#78909C">
+                                        <Path.RenderTransform>
+                                            <TransformGroup>
+                                                <RotateTransform Angle="{Binding Angle}"/>
+                                                <TranslateTransform X="{Binding EndPoint.X}" Y="{Binding EndPoint.Y}"/>
+                                            </TransformGroup>
+                                        </Path.RenderTransform>
+                                    </Path>
+                                </Panel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <ItemsControl ItemsSource="{Binding GraphNodes}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Canvas Width="4000" Height="4000"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="models:GraphNode">
+                                <Border Width="140" Height="45"
+                                        Background="#E3F2FD"
+                                        CornerRadius="6"
+                                        BorderBrush="#1976D2"
+                                        BorderThickness="2">
+                                    <Border.RenderTransform>
+                                        <TranslateTransform X="{Binding X}" Y="{Binding Y}"/>
+                                    </Border.RenderTransform>
+                                    <TextBlock Text="{Binding DisplayName}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               Foreground="#0D47A1"
+                                               TextTrimming="CharacterEllipsis"
+                                               Margin="5,0"/>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                </Panel>
+            </az:ZoomBorder>
+        </DockPanel>
+</Border>
+        </Grid>
+    </Grid>
+</UserControl>
