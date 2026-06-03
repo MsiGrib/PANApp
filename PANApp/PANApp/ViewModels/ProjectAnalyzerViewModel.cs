@@ -14,21 +14,6 @@ public class ProjectAnalyzerViewModel : ViewModelBase
 {
     private readonly ProfileService _profileService;
     private readonly ProjectAnalyzerService _analyzerService;
-    private readonly GraphLayoutService _layoutService;
-
-    private double _graphCanvasWidth = 1200;
-    public double GraphCanvasWidth
-    {
-        get => _graphCanvasWidth;
-        set => this.RaiseAndSetIfChanged(ref _graphCanvasWidth, value);
-    }
-
-    private double _graphCanvasHeight = 800;
-    public double GraphCanvasHeight
-    {
-        get => _graphCanvasHeight;
-        set => this.RaiseAndSetIfChanged(ref _graphCanvasHeight, value);
-    }
 
     private ObservableCollection<ProjectProfile> _profiles;
     public ObservableCollection<ProjectProfile> Profiles
@@ -77,7 +62,6 @@ public class ProjectAnalyzerViewModel : ViewModelBase
     {
         _profileService = new ProfileService();
         _analyzerService = new ProjectAnalyzerService();
-        _layoutService = new GraphLayoutService();
 
         Profiles = new ObservableCollection<ProjectProfile>(_profileService.LoadProfiles());
         GraphNodes = new ObservableCollection<GraphNode>();
@@ -85,14 +69,26 @@ public class ProjectAnalyzerViewModel : ViewModelBase
 
         BrowseFolder = new Interaction<string, string>();
 
+        var canAnalyze = this.WhenAnyValue(x => x.SelectedProfile)
+            .Select(profile =>
+            {
+                if (profile == null) return Observable.Return(false);
+
+                return profile.WhenAnyValue(p => p.ProjectPath)
+                    .Select(path => !string.IsNullOrWhiteSpace(path));
+            })
+            .Switch()
+            .StartWith(false);
+
+        var canBrowseOrDelete = this.WhenAnyValue(x => x.SelectedProfile)
+            .Select(profile => profile != null)
+            .StartWith(false);
+
         CreateProfileCommand = ReactiveCommand.Create(CreateProfile);
-        DeleteProfileCommand = ReactiveCommand.Create(DeleteProfile,
-            this.WhenAnyValue(x => x.SelectedProfile).Select(p => p != null));
+        DeleteProfileCommand = ReactiveCommand.Create(DeleteProfile, canBrowseOrDelete);
         SaveProfilesCommand = ReactiveCommand.Create(SaveProfiles);
-        AnalyzeProjectCommand = ReactiveCommand.CreateFromTask(AnalyzeProjectAsync,
-            this.WhenAnyValue(x => x.SelectedProfile).Select(p => p != null && !string.IsNullOrWhiteSpace(p.ProjectPath)));
-        BrowseFolderCommand = ReactiveCommand.CreateFromTask(BrowseFolderAsync,
-            this.WhenAnyValue(x => x.SelectedProfile).Select(p => p != null));
+        AnalyzeProjectCommand = ReactiveCommand.CreateFromTask(AnalyzeProjectAsync, canAnalyze);
+        BrowseFolderCommand = ReactiveCommand.CreateFromTask(BrowseFolderAsync, canBrowseOrDelete);
     }
 
     private void CreateProfile()
@@ -103,7 +99,6 @@ public class ProjectAnalyzerViewModel : ViewModelBase
             Language = "C#",
             ProjectPath = ""
         };
-
         Profiles.Add(newProfile);
         SelectedProfile = newProfile;
     }
@@ -130,7 +125,9 @@ public class ProjectAnalyzerViewModel : ViewModelBase
     }
 
     private void SaveProfiles()
-        => _profileService.SaveProfiles(Profiles.ToList());
+    {
+        _profileService.SaveProfiles(Profiles.ToList());
+    }
 
     private async Task AnalyzeProjectAsync()
     {

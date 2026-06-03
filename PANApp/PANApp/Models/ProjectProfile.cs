@@ -3,7 +3,7 @@ using System;
 
 namespace PANApp.Models;
 
-public sealed class ProjectProfile : ReactiveObject
+public class ProjectProfile : ReactiveObject
 {
     private string _id = Guid.NewGuid().ToString();
     public string Id
