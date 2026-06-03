@@ -24,7 +24,9 @@ public class ProfileService
     public List<ProjectProfile> LoadProfiles()
     {
         if (!File.Exists(_filePath)) return new List<ProjectProfile>();
+
         var json = File.ReadAllText(_filePath);
+
         return JsonSerializer.Deserialize<List<ProjectProfile>>(json) ?? new List<ProjectProfile>();
     }
 }

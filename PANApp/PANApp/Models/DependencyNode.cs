@@ -2,7 +2,7 @@
 
 namespace PANApp.Models;
 
-public class DependencyNode
+public sealed record DependencyNode
 {
     public string ModuleName { get; set; } = string.Empty;
     public string FilePath { get; set; } = string.Empty;

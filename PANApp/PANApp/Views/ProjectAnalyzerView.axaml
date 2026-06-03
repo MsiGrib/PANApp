@@ -57,80 +57,91 @@
                 </StackPanel>
             </Border>
 
-    <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="1" CornerRadius="5" Padding="10" ClipToBounds="True">
-        <DockPanel>
-            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
-                <TextBlock Text="Граф зависимостей модулей" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
-                <TextBlock Text="(Колесо мыши — зум, ПКМ/СКМ — перемещение)" FontSize="11" Foreground="Gray" VerticalAlignment="Center"/>
-            </StackPanel>
+            <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="1" CornerRadius="5" Padding="10" ClipToBounds="True">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
+                        <TextBlock Text="Граф зависимостей модулей" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+                        <TextBlock Text="(Колесо мыши — зум, ПКМ/СКМ — перемещение)" FontSize="11" Foreground="Gray" VerticalAlignment="Center"/>
+                    </StackPanel>
 
-            <ProgressBar DockPanel.Dock="Bottom" IsIndeterminate="True" IsVisible="{Binding IsAnalyzing}" Height="4"/>
+                    <ProgressBar DockPanel.Dock="Bottom" IsIndeterminate="True" IsVisible="{Binding IsAnalyzing}" Height="4"/>
 
-            <az:ZoomBorder ZoomSpeed="1.2"
-                           MinZoomX="0.1" MinZoomY="0.1"
-                           MaxZoomX="5.0" MaxZoomY="5.0"
-                           Background="Transparent">
+                    <az:ZoomBorder ZoomSpeed="1.2"
+                                   MinZoomX="0.1" MinZoomY="0.1"
+                                   MaxZoomX="5.0" MaxZoomY="5.0"
+                                   Background="Transparent">
 
-                <Panel Width="4000" Height="4000" Background="#1E1E1E">
+                        <Canvas Width="4000" Height="4000" Background="#1E1E1E">
 
-                    <ItemsControl ItemsSource="{Binding GraphEdges}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <Canvas Width="4000" Height="4000"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="models:GraphEdge">
-                                <Panel>
-                                    <Line StartPoint="{Binding StartPoint}"
-                                          EndPoint="{Binding EndPoint}"
-                                          Stroke="#78909C"
-                                          StrokeThickness="1.5"/>
-                                    <Path Data="M 0,0 L -8,-4 L -8,4 Z" Fill="#78909C">
-                                        <Path.RenderTransform>
-                                            <TransformGroup>
-                                                <RotateTransform Angle="{Binding Angle}"/>
-                                                <TranslateTransform X="{Binding EndPoint.X}" Y="{Binding EndPoint.Y}"/>
-                                            </TransformGroup>
-                                        </Path.RenderTransform>
-                                    </Path>
-                                </Panel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                            <ItemsControl ItemsSource="{Binding GraphEdges}"
+                                          Width="4000" Height="4000"
+                                          HorizontalAlignment="Left" 
+                                          VerticalAlignment="Top">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas Width="4000" Height="4000"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="models:GraphEdge">
+                                        <Panel>
+                                            <Line StartPoint="{Binding StartPoint}"
+                                                  EndPoint="{Binding EndPoint}"
+                                                  Stroke="#78909C"
+                                                  StrokeThickness="1.5"/>
 
-                    <ItemsControl ItemsSource="{Binding GraphNodes}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <Canvas Width="4000" Height="4000"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="models:GraphNode">
-                                <Border Width="140" Height="45"
-                                        Background="#E3F2FD"
-                                        CornerRadius="6"
-                                        BorderBrush="#1976D2"
-                                        BorderThickness="2">
-                                    <Border.RenderTransform>
-                                        <TranslateTransform X="{Binding X}" Y="{Binding Y}"/>
-                                    </Border.RenderTransform>
-                                    <TextBlock Text="{Binding DisplayName}"
-                                               HorizontalAlignment="Center"
-                                               VerticalAlignment="Center"
-                                               FontWeight="SemiBold"
-                                               Foreground="#0D47A1"
-                                               TextTrimming="CharacterEllipsis"
-                                               Margin="5,0"/>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                                            <Line StartPoint="{Binding ArrowLeft}"
+                                                  EndPoint="{Binding ArrowTip}"
+                                                  Stroke="#78909C"
+                                                  StrokeThickness="1.5"/>
 
-                </Panel>
-            </az:ZoomBorder>
-        </DockPanel>
-</Border>
+                                            <Line StartPoint="{Binding ArrowRight}"
+                                                  EndPoint="{Binding ArrowTip}"
+                                                  Stroke="#78909C"
+                                                  StrokeThickness="1.5"/>
+                                        </Panel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <ItemsControl ItemsSource="{Binding GraphNodes}"
+                                          Width="4000" Height="4000"
+                                          HorizontalAlignment="Left" 
+                                          VerticalAlignment="Top">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas Width="4000" Height="4000"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="models:GraphNode">
+                                        <Border Width="{Binding Width}"
+                                                Height="{Binding Height}"
+                                                Margin="{Binding Margin}"
+                                                Background="#E3F2FD"
+                                                CornerRadius="6"
+                                                BorderBrush="#1976D2"
+                                                BorderThickness="2">
+                                            <ToolTip.Tip>
+                                                <TextBlock Text="{Binding FullName}"/>
+                                            </ToolTip.Tip>
+
+                                            <TextBlock Text="{Binding DisplayName}"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#0D47A1"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       Margin="5,0"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                        </Canvas>
+                    </az:ZoomBorder>
+                </DockPanel>
+            </Border>
         </Grid>
     </Grid>
 </UserControl>

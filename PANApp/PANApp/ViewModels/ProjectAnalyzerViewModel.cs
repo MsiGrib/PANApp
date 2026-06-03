@@ -16,6 +16,20 @@ public class ProjectAnalyzerViewModel : ViewModelBase
     private readonly ProjectAnalyzerService _analyzerService;
     private readonly GraphLayoutService _layoutService;
 
+    private double _graphCanvasWidth = 1200;
+    public double GraphCanvasWidth
+    {
+        get => _graphCanvasWidth;
+        set => this.RaiseAndSetIfChanged(ref _graphCanvasWidth, value);
+    }
+
+    private double _graphCanvasHeight = 800;
+    public double GraphCanvasHeight
+    {
+        get => _graphCanvasHeight;
+        set => this.RaiseAndSetIfChanged(ref _graphCanvasHeight, value);
+    }
+
     private ObservableCollection<ProjectProfile> _profiles;
     public ObservableCollection<ProjectProfile> Profiles
     {
@@ -89,6 +103,7 @@ public class ProjectAnalyzerViewModel : ViewModelBase
             Language = "C#",
             ProjectPath = ""
         };
+
         Profiles.Add(newProfile);
         SelectedProfile = newProfile;
     }
@@ -96,26 +111,26 @@ public class ProjectAnalyzerViewModel : ViewModelBase
     private void DeleteProfile()
     {
         if (SelectedProfile == null) return;
+
         var index = Profiles.IndexOf(SelectedProfile);
         Profiles.Remove(SelectedProfile);
+
         if (Profiles.Count > 0)
             SelectedProfile = Profiles[Math.Min(index, Profiles.Count - 1)];
-        else
-            SelectedProfile = null;
+        else SelectedProfile = null;
     }
 
     private async Task BrowseFolderAsync()
     {
         if (SelectedProfile == null) return;
+
         var folderPath = await BrowseFolder.Handle(string.Empty);
         if (!string.IsNullOrEmpty(folderPath))
             SelectedProfile.ProjectPath = folderPath;
     }
 
     private void SaveProfiles()
-    {
-        _profileService.SaveProfiles(Profiles.ToList());
-    }
+        => _profileService.SaveProfiles(Profiles.ToList());
 
     private async Task AnalyzeProjectAsync()
     {
@@ -128,7 +143,7 @@ public class ProjectAnalyzerViewModel : ViewModelBase
 
         try
         {
-            var (nodes, edges) = await Task.Run(() => _analyzerService.AnalyzeGraph(SelectedProfile));
+            var (nodes, edges, width, height) = await Task.Run(() => _analyzerService.AnalyzeGraph(SelectedProfile));
 
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
