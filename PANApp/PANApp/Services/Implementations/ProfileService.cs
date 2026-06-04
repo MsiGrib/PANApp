@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
-namespace PANApp.Services;
+namespace PANApp.Services.Implementations;
 
 public class ProfileService
 {

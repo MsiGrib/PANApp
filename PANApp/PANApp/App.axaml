@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="PANApp.App"
              xmlns:local="using:PANApp"
+             xmlns:converters="using:PANApp.Converters"
              RequestedThemeVariant="Default">
 
     <Application.DataTemplates>
@@ -11,5 +12,11 @@
     <Application.Styles>
         <FluentTheme />
     </Application.Styles>
+
+    <Application.Resources>
+        <converters:NotEmptyConverter x:Key="NotEmptyConverter"/>
+        <converters:StringEqualsConverter x:Key="StringEqualsConverter"/>
+        <converters:SimpleBoolConverter x:Key="SimpleBoolConverter"/>
+    </Application.Resources>
 
 </Application>

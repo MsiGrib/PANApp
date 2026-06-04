@@ -1,7 +1,8 @@
 ﻿using PANApp.Models;
-using PANApp.Services;
+using PANApp.Services.Implementations;
 using ReactiveUI;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
@@ -49,6 +50,26 @@ public class ProjectAnalyzerViewModel : ViewModelBase
         get => _isAnalyzing;
         set => this.RaiseAndSetIfChanged(ref _isAnalyzing, value);
     }
+
+    private double _graphCanvasWidth = 1200;
+    public double GraphCanvasWidth
+    {
+        get => _graphCanvasWidth;
+        set => this.RaiseAndSetIfChanged(ref _graphCanvasWidth, value);
+    }
+
+    private double _graphCanvasHeight = 800;
+    public double GraphCanvasHeight
+    {
+        get => _graphCanvasHeight;
+        set => this.RaiseAndSetIfChanged(ref _graphCanvasHeight, value);
+    }
+
+    public List<string> AvailableLanguages { get; } =
+    [
+        "C#",
+        "C# Avalonia/WPF"
+    ];
 
     public ReactiveCommand<Unit, Unit> CreateProfileCommand { get; }
     public ReactiveCommand<Unit, Unit> DeleteProfileCommand { get; }
@@ -146,6 +167,9 @@ public class ProjectAnalyzerViewModel : ViewModelBase
             {
                 foreach (var node in nodes) GraphNodes.Add(node);
                 foreach (var edge in edges) GraphEdges.Add(edge);
+
+                GraphCanvasWidth = Math.Max(width, 1200);
+                GraphCanvasHeight = Math.Max(height, 800);
             });
         }
         finally

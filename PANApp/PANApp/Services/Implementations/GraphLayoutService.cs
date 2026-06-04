@@ -5,13 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PANApp.Services;
+namespace PANApp.Services.Implementations;
 
 public class GraphLayoutService
 {
     private const double OuterMargin = 140;
-    private const double LevelGapX = 520;
-    private const double ComponentGapY = 180;
+    private const double LevelGapX = 800;
+    private const double ComponentGapY = 250;
     private const double CellGapX = 280;
     private const double CellGapY = 150;
     private const double ArrowLength = 12;
@@ -93,9 +93,6 @@ public class GraphLayoutService
             .OrderBy(g => g.Key)
             .ToList();
 
-        var maxX = 0.0;
-        var maxY = 0.0;
-
         foreach (var levelGroup in groups)
         {
             var x = OuterMargin + levelGroup.Key * LevelGapX;
@@ -158,8 +155,8 @@ public class GraphLayoutService
             });
         }
 
-        maxX = nodes.Max(n => n.X + n.Width);
-        maxY = nodes.Max(n => n.Y + n.Height);
+        var maxX = nodes.Max(n => n.X + n.Width);
+        var maxY = nodes.Max(n => n.Y + n.Height);
 
         return new GraphLayoutResult
         {
@@ -172,15 +169,6 @@ public class GraphLayoutService
     private static double PlaceComponent(List<GraphNode> nodes, double left, double top)
     {
         if (nodes.Count == 0) return 0;
-
-        if (nodes.Count == 1)
-        {
-            var node = nodes[0];
-            node.X = left;
-            node.Y = top;
-
-            return node.Height + 40;
-        }
 
         var cols = Math.Min(3, (int)Math.Ceiling(Math.Sqrt(nodes.Count)));
         var rows = (int)Math.Ceiling(nodes.Count / (double)cols);

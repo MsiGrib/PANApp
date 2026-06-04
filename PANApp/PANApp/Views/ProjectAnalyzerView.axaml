@@ -10,21 +10,29 @@
              x:DataType="vm:ProjectAnalyzerViewModel">
 
     <Grid ColumnDefinitions="300,*" Margin="10">
-        <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="1" CornerRadius="5" Margin="0,0,10,0">
+        <Border Grid.Column="0" Background="#252526" BorderBrush="#444" BorderThickness="1" CornerRadius="5" Margin="0,0,10,0">
             <DockPanel>
-                <TextBlock DockPanel.Dock="Top" Text="Профили проектов" FontSize="16" FontWeight="Bold" Margin="10"/>
-                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="10" Spacing="5">
-                    <Button Content="Сcreate" Command="{Binding CreateProfileCommand}" Classes="accent"/>
-                    <Button Content="Удалить" Command="{Binding DeleteProfileCommand}"/>
-                    <Button Content="Сохранить" Command="{Binding SaveProfilesCommand}"/>
+                <TextBlock DockPanel.Dock="Top" Text="📁 Профили проектов" FontSize="16" FontWeight="Bold" Margin="10" Foreground="White"/>
+                
+                <StackPanel DockPanel.Dock="Bottom" Orientation="Vertical" Margin="10" Spacing="5">
+                    <Button Content="➕ Создать" Command="{Binding CreateProfileCommand}" 
+                            Classes="action-btn" Background="#27ae60" Padding="10,5"/>
+                    <Button Content="🗑️ Удалить" Command="{Binding DeleteProfileCommand}" 
+                            Classes="action-btn" Background="#c0392b" Padding="10,5"/>
+                    <Button Content="💾 Сохранить" Command="{Binding SaveProfilesCommand}" 
+                            Classes="action-btn" Background="#2980b9" Padding="10,5"/>
                 </StackPanel>
-                <ListBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}" Margin="10,0,10,10">
+
+                <ListBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}" 
+                         Margin="10,0,10,10" Background="Transparent" BorderThickness="0">
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="models:ProjectProfile">
-                            <StackPanel Margin="5">
-                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
-                                <TextBlock Text="{Binding Language}" FontSize="11" Foreground="Gray"/>
-                            </StackPanel>
+                            <Border Background="#2d2d2d" CornerRadius="4" Padding="10" Margin="0,2">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="White"/>
+                                    <TextBlock Text="{Binding Language}" FontSize="11" Foreground="#888"/>
+                                </StackPanel>
+                            </Border>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
@@ -32,54 +40,75 @@
         </Border>
 
         <Grid Grid.Column="1" RowDefinitions="Auto,*">
-            <Border Grid.Row="0" BorderBrush="Gray" BorderThickness="1" CornerRadius="5" Padding="15" Margin="0,0,0,10"
+            <Border Grid.Row="0" Background="#252526" BorderBrush="#444" BorderThickness="1" CornerRadius="5" Padding="15" Margin="0,0,0,10"
                     IsVisible="{Binding SelectedProfile, Converter={x:Static ObjectConverters.IsNotNull}}">
                 <StackPanel Spacing="10">
-                    <TextBlock Text="Детали профиля" FontSize="16" FontWeight="Bold"/>
-                    <Grid ColumnDefinitions="100,*" RowDefinitions="Auto,Auto,Auto" Margin="0,10,0,0">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Название:" VerticalAlignment="Center"/>
-                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding SelectedProfile.Name}" Margin="10,0,0,0"/>
+                    <TextBlock Text="⚙️ Детали профиля" FontSize="16" FontWeight="Bold" Foreground="White"/>
 
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Язык:" VerticalAlignment="Center" Margin="0,10,0,0"/>
-                        <ComboBox Grid.Row="1" Grid.Column="1" SelectedItem="{Binding SelectedProfile.Language}" Margin="10,10,0,0">
-                            <x:String>C#</x:String>
-                            <x:String>Python</x:String>
+                    <Grid ColumnDefinitions="100,*" RowDefinitions="Auto,Auto,Auto" Margin="0,10,0,0">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Название:" VerticalAlignment="Center" Foreground="#ccc"/>
+                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding SelectedProfile.Name}" 
+                                 Margin="10,0,0,0" Background="#2d2d2d" Foreground="White" BorderBrush="#444"/>
+
+                        <TextBlock Grid.Row="1"
+                                   Grid.Column="0"
+                                   Text="Язык:"
+                                   VerticalAlignment="Center"
+                                   Margin="0,10,0,0"
+                                   Foreground="#ccc"/>
+
+                        <ComboBox Grid.Row="1"
+                                  Grid.Column="1"
+                                  Margin="10,10,0,0"
+                                  ItemsSource="{Binding AvailableLanguages}"
+                                  SelectedItem="{Binding SelectedProfile.Language}"
+                                  Background="#2d2d2d"
+                                  Foreground="White">
                         </ComboBox>
 
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Путь:" VerticalAlignment="Center" Margin="0,10,0,0"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Путь:" VerticalAlignment="Center" Margin="0,10,0,0" Foreground="#ccc"/>
                         <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="*,Auto" Margin="10,10,0,0">
-                            <TextBox Grid.Column="0" Text="{Binding SelectedProfile.ProjectPath}"/>
-                            <Button Grid.Column="1" Content="Обзор..." Command="{Binding BrowseFolderCommand}" Margin="5,0,0,0"/>
+                            <TextBox Grid.Column="0" Text="{Binding SelectedProfile.ProjectPath}" 
+                                     Background="#2d2d2d" Foreground="White" BorderBrush="#444"/>
+                            <Button Grid.Column="1" Content="📂 Обзор..." Command="{Binding BrowseFolderCommand}" 
+                                    Margin="5,0,0,0" Classes="action-btn" Background="#3498db" Padding="12,5"/>
                         </Grid>
                     </Grid>
+
                     <Button Content="▶ Анализировать проект" Command="{Binding AnalyzeProjectCommand}"
-                            Classes="accent" HorizontalAlignment="Left" Margin="0,10,0,0"/>
+                            Classes="action-btn" Background="#27ae60" HorizontalAlignment="Left" 
+                            Padding="15,8" Margin="0,10,0,0"/>
                 </StackPanel>
             </Border>
 
-            <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="1" CornerRadius="5" Padding="10" ClipToBounds="True">
+            <Border Grid.Row="1" Background="#252526" BorderBrush="#444" BorderThickness="1" CornerRadius="5" Padding="10" ClipToBounds="True">
                 <DockPanel>
                     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
-                        <TextBlock Text="Граф зависимостей модулей" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
-                        <TextBlock Text="(Колесо мыши — зум, ПКМ/СКМ — перемещение)" FontSize="11" Foreground="Gray" VerticalAlignment="Center"/>
+                        <TextBlock Text="🔗 Граф зависимостей модулей" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Foreground="White"/>
+                        <TextBlock Text="(Колесо мыши — зум, ПКМ/СКМ — перемещение)" FontSize="11" Foreground="#888" VerticalAlignment="Center"/>
                     </StackPanel>
 
-                    <ProgressBar DockPanel.Dock="Bottom" IsIndeterminate="True" IsVisible="{Binding IsAnalyzing}" Height="4"/>
+                    <ProgressBar DockPanel.Dock="Bottom" IsIndeterminate="True" IsVisible="{Binding IsAnalyzing}" 
+                                 Height="4" Background="Transparent" Foreground="#3498db"/>
 
                     <az:ZoomBorder ZoomSpeed="1.2"
                                    MinZoomX="0.1" MinZoomY="0.1"
                                    MaxZoomX="5.0" MaxZoomY="5.0"
-                                   Background="Transparent">
+                                   Background="Transparent"
+                                   ClipToBounds="True">
 
-                        <Canvas Width="4000" Height="4000" Background="#1E1E1E">
+                        <Canvas Width="{Binding GraphCanvasWidth}"
+                                Height="{Binding GraphCanvasHeight}"
+                                Background="#1e1e1e">
 
                             <ItemsControl ItemsSource="{Binding GraphEdges}"
-                                          Width="4000" Height="4000"
+                                          Width="{Binding GraphCanvasWidth}"
+                                          Height="{Binding GraphCanvasHeight}"
                                           HorizontalAlignment="Left" 
                                           VerticalAlignment="Top">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <Canvas Width="4000" Height="4000"/>
+                                        <Canvas Width="{Binding GraphCanvasWidth}" Height="{Binding GraphCanvasHeight}"/>
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
@@ -105,12 +134,13 @@
                             </ItemsControl>
 
                             <ItemsControl ItemsSource="{Binding GraphNodes}"
-                                          Width="4000" Height="4000"
+                                          Width="{Binding GraphCanvasWidth}"
+                                          Height="{Binding GraphCanvasHeight}"
                                           HorizontalAlignment="Left" 
                                           VerticalAlignment="Top">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <Canvas Width="4000" Height="4000"/>
+                                        <Canvas Width="{Binding GraphCanvasWidth}" Height="{Binding GraphCanvasHeight}"/>
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
@@ -118,19 +148,19 @@
                                         <Border Width="{Binding Width}"
                                                 Height="{Binding Height}"
                                                 Margin="{Binding Margin}"
-                                                Background="#E3F2FD"
+                                                Background="#2d2d2d"
                                                 CornerRadius="6"
-                                                BorderBrush="#1976D2"
+                                                BorderBrush="#3498db"
                                                 BorderThickness="2">
                                             <ToolTip.Tip>
-                                                <TextBlock Text="{Binding FullName}"/>
+                                                <TextBlock Text="{Binding FullName}" Background="#1e1e1e" Foreground="White"/>
                                             </ToolTip.Tip>
 
                                             <TextBlock Text="{Binding DisplayName}"
                                                        HorizontalAlignment="Center"
                                                        VerticalAlignment="Center"
                                                        FontWeight="SemiBold"
-                                                       Foreground="#0D47A1"
+                                                       Foreground="White"
                                                        TextTrimming="CharacterEllipsis"
                                                        Margin="5,0"/>
                                         </Border>

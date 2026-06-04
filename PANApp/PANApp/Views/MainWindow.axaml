@@ -1,22 +1,91 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:PANApp.ViewModels"
+        xmlns:views="using:PANApp.Views"
+        xmlns:converters="using:PANApp.Converters"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
         x:Class="PANApp.Views.MainWindow"
+        x:Name="RootWindow"
         x:DataType="vm:MainViewModel"
-        Title="Dependency Analyzer App" Width="900" Height="700">
+        Title="Dependency Analyzer" Width="800" Height="700"
+        MinWidth="400" MinHeight="300"
+        WindowStartupLocation="CenterScreen"
+        Background="#1a1a1a">
 
-    <DockPanel>
-        <Menu DockPanel.Dock="Top">
-            <MenuItem Header="Файл">
-                <MenuItem Header="Открыть анализатор" Command="{Binding ShowAnalyzerCommand}"/>
-            </MenuItem>
-        </Menu>
+    <Window.Resources>
+        <converters:StringEqualsConverter x:Key="StringEqualsConverter"/>
+    </Window.Resources>
 
-        <ContentControl Content="{Binding CurrentViewModel}"
-                        HorizontalContentAlignment="Stretch"
-                        VerticalContentAlignment="Stretch"/>
-    </DockPanel>
+    <Window.Styles>
+        <Style Selector="Button.nav-btn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#ccc"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="Margin" Value="0,0,5,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <Style Selector="Button.nav-btn:pointerover">
+            <Setter Property="Background" Value="#333"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <Style Selector="Button.nav-btn[Tag=Active]">
+            <Setter Property="Background" Value="#3498db"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style Selector="Button.action-btn">
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+
+        <Style Selector="Button.action-btn:pointerover">
+            <Setter Property="Opacity" Value="0.9"/>
+        </Style>
+
+        <Style Selector="Button.action-btn:disabled">
+            <Setter Property="Opacity" Value="0.5"/>
+            <Setter Property="Cursor" Value="Arrow"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="Auto,*">
+        <Border Grid.Row="0" Background="#1e1e1e" BorderBrush="#333" BorderThickness="0,0,0,1">
+            <Grid Margin="10,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <Button Content="📊 Анализ проекта"
+                            Classes="nav-btn"
+                            Command="{Binding NavigateToAnalyzerCommand}">
+                        <Button.Tag>
+                            <Binding Path="CurrentPage" 
+                                     Converter="{StaticResource StringEqualsConverter}" 
+                                     ConverterParameter="Analyzer"/>
+                        </Button.Tag>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1">
+            <views:ProjectAnalyzerView
+                DataContext="{Binding AnalyzerVm}"
+                IsVisible="{Binding #RootWindow.DataContext.CurrentPage,
+                Converter={StaticResource StringEqualsConverter},
+                ConverterParameter=Analyzer}"/>
+        </Grid>
+    </Grid>
 </Window>
