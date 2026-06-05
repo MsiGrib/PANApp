@@ -28,10 +28,30 @@
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="models:ProjectProfile">
                             <Border Background="#2d2d2d" CornerRadius="4" Padding="10" Margin="0,2">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="White"/>
-                                    <TextBlock Text="{Binding Language}" FontSize="11" Foreground="#888"/>
-                                </StackPanel>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="White"/>
+                                        <TextBlock Text="{Binding Language}" FontSize="11" Foreground="#888"/>
+                                    </StackPanel>
+                                    
+                                    <Border Grid.Column="1" 
+                                            Background="#27ae60" 
+                                            CornerRadius="10" 
+                                            Padding="8,3"
+                                            VerticalAlignment="Center"
+                                            IsVisible="{Binding HasAnalyzedGraph}">
+                                        <TextBlock Text="✓" 
+                                                   Foreground="White" 
+                                                   FontSize="11" 
+                                                   FontWeight="Bold"
+                                                   HorizontalAlignment="Center"/>
+                                        <ToolTip.Tip>
+                                            <Border Background="#1e1e1e" Padding="8,4" CornerRadius="4">
+                                                <TextBlock Text="Граф проанализирован в текущей сессии" Foreground="White"/>
+                                            </Border>
+                                        </ToolTip.Tip>
+                                    </Border>
+                                </Grid>
                             </Border>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
@@ -50,20 +70,11 @@
                         <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding SelectedProfile.Name}" 
                                  Margin="10,0,0,0" Background="#2d2d2d" Foreground="White" BorderBrush="#444"/>
 
-                        <TextBlock Grid.Row="1"
-                                   Grid.Column="0"
-                                   Text="Язык:"
-                                   VerticalAlignment="Center"
-                                   Margin="0,10,0,0"
-                                   Foreground="#ccc"/>
-
-                        <ComboBox Grid.Row="1"
-                                  Grid.Column="1"
-                                  Margin="10,10,0,0"
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Язык:" VerticalAlignment="Center" Margin="0,10,0,0" Foreground="#ccc"/>
+                        <ComboBox Grid.Row="1" Grid.Column="1" Margin="10,10,0,0"
                                   ItemsSource="{Binding AvailableLanguages}"
                                   SelectedItem="{Binding SelectedProfile.Language}"
-                                  Background="#2d2d2d"
-                                  Foreground="White">
+                                  Background="#2d2d2d" Foreground="White">
                         </ComboBox>
 
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Путь:" VerticalAlignment="Center" Margin="0,10,0,0" Foreground="#ccc"/>
@@ -91,7 +102,8 @@
                     <ProgressBar DockPanel.Dock="Bottom" IsIndeterminate="True" IsVisible="{Binding IsAnalyzing}" 
                                  Height="4" Background="Transparent" Foreground="#3498db"/>
 
-                    <az:ZoomBorder ZoomSpeed="1.2"
+                    <az:ZoomBorder x:Name="GraphZoomBorder"
+                                   ZoomSpeed="1.2"
                                    MinZoomX="0.1" MinZoomY="0.1"
                                    MaxZoomX="5.0" MaxZoomY="5.0"
                                    Background="Transparent"
@@ -153,7 +165,9 @@
                                                 BorderBrush="#3498db"
                                                 BorderThickness="2">
                                             <ToolTip.Tip>
-                                                <TextBlock Text="{Binding FullName}" Background="#1e1e1e" Foreground="White"/>
+                                                <Border Background="#1e1e1e" Padding="8,4" CornerRadius="4" BorderBrush="#333" BorderThickness="1">
+                                                    <TextBlock Text="{Binding FullName}" Foreground="White" FontSize="12"/>
+                                                </Border>
                                             </ToolTip.Tip>
 
                                             <TextBlock Text="{Binding DisplayName}"

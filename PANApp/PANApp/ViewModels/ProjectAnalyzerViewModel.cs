@@ -110,6 +110,31 @@ public class ProjectAnalyzerViewModel : ViewModelBase
         SaveProfilesCommand = ReactiveCommand.Create(SaveProfiles);
         AnalyzeProjectCommand = ReactiveCommand.CreateFromTask(AnalyzeProjectAsync, canAnalyze);
         BrowseFolderCommand = ReactiveCommand.CreateFromTask(BrowseFolderAsync, canBrowseOrDelete);
+
+        this.WhenAnyValue(x => x.SelectedProfile)
+            .Subscribe(LoadGraphFromProfile);
+    }
+
+    private void LoadGraphFromProfile(ProjectProfile profile)
+    {
+        GraphNodes.Clear();
+        GraphEdges.Clear();
+
+        if (profile == null || !profile.HasAnalyzedGraph)
+        {
+            GraphCanvasWidth = 1200;
+            GraphCanvasHeight = 800;
+            return;
+        }
+
+        foreach (var node in profile.AnalyzedNodes)
+            GraphNodes.Add(node);
+
+        foreach (var edge in profile.AnalyzedEdges)
+            GraphEdges.Add(edge);
+
+        GraphCanvasWidth = profile.CanvasWidth;
+        GraphCanvasHeight = profile.CanvasHeight;
     }
 
     private void CreateProfile()
@@ -133,7 +158,8 @@ public class ProjectAnalyzerViewModel : ViewModelBase
 
         if (Profiles.Count > 0)
             SelectedProfile = Profiles[Math.Min(index, Profiles.Count - 1)];
-        else SelectedProfile = null;
+        else
+            SelectedProfile = null;
     }
 
     private async Task BrowseFolderAsync()
@@ -156,8 +182,6 @@ public class ProjectAnalyzerViewModel : ViewModelBase
             return;
 
         IsAnalyzing = true;
-        GraphNodes.Clear();
-        GraphEdges.Clear();
 
         try
         {
@@ -165,11 +189,19 @@ public class ProjectAnalyzerViewModel : ViewModelBase
 
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
+                SelectedProfile.AnalyzedNodes = nodes;
+                SelectedProfile.AnalyzedEdges = edges;
+                SelectedProfile.CanvasWidth = Math.Max(width, 1200);
+                SelectedProfile.CanvasHeight = Math.Max(height, 800);
+
+                GraphNodes.Clear();
+                GraphEdges.Clear();
+
                 foreach (var node in nodes) GraphNodes.Add(node);
                 foreach (var edge in edges) GraphEdges.Add(edge);
 
-                GraphCanvasWidth = Math.Max(width, 1200);
-                GraphCanvasHeight = Math.Max(height, 800);
+                GraphCanvasWidth = SelectedProfile.CanvasWidth;
+                GraphCanvasHeight = SelectedProfile.CanvasHeight;
             });
         }
         finally
