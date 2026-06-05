@@ -1,0 +1,74 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PANApp.ViewModels"
+             x:Class="PANApp.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+    <Grid Margin="20" RowDefinitions="Auto,*,Auto">
+
+        <TextBlock Grid.Row="0"
+                   Text="⚙️ Настройки приложения"
+                   FontSize="20" FontWeight="SemiBold"
+                   Foreground="White" Margin="0,0,0,20"/>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="15" MaxWidth="500">
+
+                <Border Background="#333" CornerRadius="8" Padding="15">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="🔹 Основные" FontWeight="SemiBold" Foreground="#8ab4f8"/>
+
+                        <CheckBox Content="🚀 Запускать вместе с Windows"
+                                  IsChecked="{Binding StartWithWindows, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  Command="{Binding OnStartWithWindowsChangedCommand}"
+                                  Foreground="White" Margin="5,0">
+                            <ToolTip.Tip>
+                                <Border Background="#1e1e1e" Padding="8,4" CornerRadius="4">
+                                    <TextBlock Text="Добавить приложение в автозагрузку системы" Foreground="White"/>
+                                </Border>
+                            </ToolTip.Tip>
+                        </CheckBox>
+                        <TextBlock Text="Автоматически запускать PANApp при входе в систему"
+                                   Foreground="Gray" FontSize="11" Margin="25,0,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="#2a2a2a" CornerRadius="8" Padding="15" BorderBrush="#444" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="📊 Статус" FontWeight="SemiBold" Foreground="#8ab4f8" Margin="0,0,0,5"/>
+                        <TextBlock Text="{Binding SettingsStatus}"
+                                   Foreground="#aaa" FontSize="12"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="#252526" CornerRadius="8" Padding="15" BorderBrush="#3a3a3a" BorderThickness="1">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="🔜 В разработке" FontWeight="SemiBold" Foreground="#f1c40f"/>
+                        <TextBlock Text="• Пользовательские темы" Foreground="Gray" FontSize="11"/>
+                        <TextBlock Text="• Выбор языка интерфейса" Foreground="Gray" FontSize="11"/>
+                        <TextBlock Text="• Дополнительные настройки анализа" Foreground="Gray" FontSize="11"/>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,20,0,0">
+            <Button Content="🔄 Сбросить настройки"
+                    Command="{Binding ResetToDefaultsCommand}"
+                    Classes="action-btn" Background="#6c757d"
+                    Padding="15,8"/>
+            <Button Content="💾 Автосохранение включено"
+                    IsEnabled="False"
+                    Classes="action-btn" Background="#27ae60"
+                    Padding="15,8" Opacity="0.6">
+                <ToolTip.Tip>
+                    <Border Background="#1e1e1e" Padding="8,4" CornerRadius="4">
+                        <TextBlock Text="Настройки сохраняются автоматически при изменении" Foreground="White"/>
+                    </Border>
+                </ToolTip.Tip>
+            </Button>
+        </StackPanel>
+
+    </Grid>
+</UserControl>

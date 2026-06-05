@@ -76,6 +76,16 @@
                                      ConverterParameter="Analyzer"/>
                         </Button.Tag>
                     </Button>
+
+                    <Button Content="⚙️ Настройки"
+                            Classes="nav-btn"
+                            Command="{Binding NavigateToSettingsCommand}">
+                        <Button.Tag>
+                            <Binding Path="CurrentPage" 
+                                     Converter="{StaticResource StringEqualsConverter}" 
+                                     ConverterParameter="Settings"/>
+                        </Button.Tag>
+                    </Button>
                 </StackPanel>
             </Grid>
         </Border>
@@ -84,8 +94,14 @@
             <views:ProjectAnalyzerView
                 DataContext="{Binding AnalyzerVm}"
                 IsVisible="{Binding #RootWindow.DataContext.CurrentPage,
-                Converter={StaticResource StringEqualsConverter},
-                ConverterParameter=Analyzer}"/>
+                    Converter={StaticResource StringEqualsConverter},
+                    ConverterParameter=Analyzer}"/>
+
+            <views:SettingsView
+                DataContext="{Binding SettingsVm}"
+                IsVisible="{Binding #RootWindow.DataContext.CurrentPage,
+                    Converter={StaticResource StringEqualsConverter},
+                    ConverterParameter=Settings}"/>
         </Grid>
     </Grid>
 </Window>

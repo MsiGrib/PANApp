@@ -19,15 +19,29 @@ public class MainViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _analyzerVm, value);
     }
 
+    private SettingsViewModel _settingsVm;
+    public SettingsViewModel SettingsVm
+    {
+        get => _settingsVm;
+        set => this.RaiseAndSetIfChanged(ref _settingsVm, value);
+    }
+
     public ReactiveCommand<Unit, Unit> NavigateToAnalyzerCommand { get; }
+    public ReactiveCommand<Unit, Unit> NavigateToSettingsCommand { get; }
 
     public MainViewModel()
     {
         AnalyzerVm = new ProjectAnalyzerViewModel();
+        SettingsVm = new SettingsViewModel();
 
         NavigateToAnalyzerCommand = ReactiveCommand.Create(() =>
         {
             CurrentPage = "Analyzer";
+        });
+
+        NavigateToSettingsCommand = ReactiveCommand.Create(() =>
+        {
+            CurrentPage = "Settings";
         });
     }
 }
