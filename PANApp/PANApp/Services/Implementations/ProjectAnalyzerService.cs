@@ -1,6 +1,8 @@
 ﻿using PANApp.Comparers;
 using PANApp.Models;
+using PANApp.Models.Configs;
 using PANApp.Services.Implementations.LanguageAnalyzers;
+using PANApp.Services.Implementations.LanguageAnalyzers.CSharp;
 using PANApp.Services.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -9,7 +11,7 @@ using System.Linq;
 
 namespace PANApp.Services.Implementations;
 
-public class ProjectAnalyzerService
+public sealed class ProjectAnalyzerService
 {
     private readonly Dictionary<string, ILanguageAnalyzer> _analyzers;
 
@@ -23,7 +25,7 @@ public class ProjectAnalyzerService
         };
     }
 
-    public (List<GraphNode> Nodes, List<GraphEdge> Edges, double Width, double Height) AnalyzeGraph(ProjectProfile profile)
+    public (List<GraphNode> Nodes, List<GraphEdge> Edges, double Width, double Height) AnalyzeGraph(ProjectProfileConfig profile)
     {
         var basePath = profile.ProjectPath.TrimEnd('\\', '/');
 
@@ -93,8 +95,7 @@ public class ProjectAnalyzerService
 
     private static void AddIndex(Dictionary<string, HashSet<string>> index, string key, string filePath)
     {
-        if (string.IsNullOrWhiteSpace(key))
-            return;
+        if (string.IsNullOrWhiteSpace(key)) return;
 
         if (!index.TryGetValue(key, out var set))
         {

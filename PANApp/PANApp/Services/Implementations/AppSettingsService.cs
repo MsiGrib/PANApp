@@ -1,5 +1,5 @@
 ﻿using Microsoft.Win32;
-using PANApp.Models;
+using PANApp.Models.Configs;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -13,8 +13,6 @@ public static class AppSettingsService
     private static readonly string ConfigDir = GetConfigDir();
     private static readonly string SettingsPath = Path.Combine(ConfigDir, "appsettings.json");
 
-    #region Config paths
-
     private static string GetConfigDir()
     {
         try
@@ -23,6 +21,7 @@ public static class AppSettingsService
                 Environment.SpecialFolder.ApplicationData,
                 Environment.SpecialFolderOption.Create
             );
+
             if (!string.IsNullOrEmpty(appData))
                 return Path.Combine(appData, "PANApp");
         }
@@ -42,11 +41,11 @@ public static class AppSettingsService
         return Path.Combine(AppContext.BaseDirectory, "config");
     }
 
-    public static AppSettings Load()
+    public static AppConfig Load()
     {
         if (!File.Exists(SettingsPath))
         {
-            var defaults = new AppSettings();
+            var defaults = new AppConfig();
             Save(defaults);
             return defaults;
         }
@@ -54,22 +53,22 @@ public static class AppSettingsService
         try
         {
             var json = File.ReadAllText(SettingsPath);
-            var settings = JsonSerializer.Deserialize<AppSettings>(json, new JsonSerializerOptions
+            var settings = JsonSerializer.Deserialize<AppConfig>(json, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             });
 
-            return settings ?? new AppSettings();
+            return settings ?? new AppConfig();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[ERROR] Load app settings: {ex.Message}");
-            return new AppSettings();
+            return new AppConfig();
         }
     }
 
-    public static void Save(AppSettings settings)
+    public static void Save(AppConfig settings)
     {
         try
         {
@@ -87,10 +86,6 @@ public static class AppSettingsService
             Console.WriteLine($"[ERROR] Save app settings: {ex.Message}");
         }
     }
-
-    #endregion
-
-    #region Auto start
 
     public static void ApplyStartWithWindows(bool enabled)
     {
@@ -130,10 +125,8 @@ public static class AppSettingsService
                         var dotnetPath = FindDotnetPath();
                         exePath = $"\"{dotnetPath}\" \"{exePath}\"";
                     }
-                    else
-                    {
-                        exePath = $"\"{exePath}\"";
-                    }
+                    else exePath = $"\"{exePath}\"";
+
                     key.SetValue(appName, exePath, RegistryValueKind.String);
                     Console.WriteLine($"[STARTUP] Registry set: {appName}");
                 }
@@ -163,7 +156,8 @@ public static class AppSettingsService
             Directory.CreateDirectory(autostartDir);
             string exePath = GetExecutablePath();
             string command = exePath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
-                ? $"/usr/bin/dotnet \"{exePath}\"" : $"\"{exePath}\"";
+                ? $"/usr/bin/dotnet \"{exePath}\""
+                : $"\"{exePath}\"";
 
             var desktopContent = $"""
                 [Desktop Entry]
@@ -193,7 +187,8 @@ public static class AppSettingsService
             Directory.CreateDirectory(launchAgentsDir);
             string exePath = GetExecutablePath();
             string program = exePath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
-                ? "/usr/local/bin/dotnet" : exePath;
+                ? "/usr/local/bin/dotnet"
+                : exePath;
 
             var plistContent = $"""
                 <?xml version="1.0" encoding="UTF-8"?>
@@ -242,14 +237,10 @@ public static class AppSettingsService
                 return File.Exists(Path.Combine(home, "Library", "LaunchAgents", "com.panapp.startup.plist"));
             }
         }
-        catch { }
+        catch { /* Ignored */ }
 
         return false;
     }
-
-    #endregion
-
-    #region Helpers
 
     private static string GetExecutablePath()
         => Environment.ProcessPath
@@ -281,6 +272,4 @@ public static class AppSettingsService
 
         return "dotnet";
     }
-
-    #endregion
 }

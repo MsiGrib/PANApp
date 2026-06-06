@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
-namespace PANApp.Services.Implementations.LanguageAnalyzers;
+namespace PANApp.Services.Implementations.LanguageAnalyzers.CSharp;
 
 public sealed class CSharpAvaloniaWpfLanguageAnalyzer : ILanguageAnalyzer
 {

@@ -1,4 +1,5 @@
 ﻿using PANApp.Models;
+using PANApp.Models.Configs;
 using PANApp.Services.Implementations;
 using ReactiveUI;
 using System;
@@ -16,15 +17,15 @@ public class ProjectAnalyzerViewModel : ViewModelBase
     private readonly ProfileService _profileService;
     private readonly ProjectAnalyzerService _analyzerService;
 
-    private ObservableCollection<ProjectProfile> _profiles;
-    public ObservableCollection<ProjectProfile> Profiles
+    private ObservableCollection<ProjectProfileConfig> _profiles;
+    public ObservableCollection<ProjectProfileConfig> Profiles
     {
         get => _profiles;
         set => this.RaiseAndSetIfChanged(ref _profiles, value);
     }
 
-    private ProjectProfile _selectedProfile;
-    public ProjectProfile SelectedProfile
+    private ProjectProfileConfig _selectedProfile;
+    public ProjectProfileConfig SelectedProfile
     {
         get => _selectedProfile;
         set => this.RaiseAndSetIfChanged(ref _selectedProfile, value);
@@ -84,7 +85,7 @@ public class ProjectAnalyzerViewModel : ViewModelBase
         _profileService = new ProfileService();
         _analyzerService = new ProjectAnalyzerService();
 
-        Profiles = new ObservableCollection<ProjectProfile>(_profileService.LoadProfiles());
+        Profiles = new ObservableCollection<ProjectProfileConfig>(_profileService.LoadProfiles());
         GraphNodes = new ObservableCollection<GraphNode>();
         GraphEdges = new ObservableCollection<GraphEdge>();
 
@@ -115,7 +116,7 @@ public class ProjectAnalyzerViewModel : ViewModelBase
             .Subscribe(LoadGraphFromProfile);
     }
 
-    private void LoadGraphFromProfile(ProjectProfile profile)
+    private void LoadGraphFromProfile(ProjectProfileConfig profile)
     {
         GraphNodes.Clear();
         GraphEdges.Clear();
@@ -139,11 +140,11 @@ public class ProjectAnalyzerViewModel : ViewModelBase
 
     private void CreateProfile()
     {
-        var newProfile = new ProjectProfile
+        var newProfile = new ProjectProfileConfig
         {
-            Name = $"Новый проект {Profiles.Count + 1}",
-            Language = "C#",
-            ProjectPath = ""
+            Name = $"New Project {Profiles.Count + 1}",
+            Language = string.Empty,
+            ProjectPath = string.Empty,
         };
         Profiles.Add(newProfile);
         SelectedProfile = newProfile;
@@ -158,8 +159,7 @@ public class ProjectAnalyzerViewModel : ViewModelBase
 
         if (Profiles.Count > 0)
             SelectedProfile = Profiles[Math.Min(index, Profiles.Count - 1)];
-        else
-            SelectedProfile = null;
+        else SelectedProfile = null;
     }
 
     private async Task BrowseFolderAsync()

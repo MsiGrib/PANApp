@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace PANApp.Services.Implementations.LanguageAnalyzers;
+namespace PANApp.Services.Implementations.LanguageAnalyzers.CSharp;
 
 public sealed class CSharpLanguageAnalyzer : ILanguageAnalyzer
 {

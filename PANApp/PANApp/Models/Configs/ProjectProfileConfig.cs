@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace PANApp.Models;
+namespace PANApp.Models.Configs;
 
-public class ProjectProfile : ReactiveObject
+public sealed class ProjectProfileConfig : ReactiveObject
 {
     private string _id = Guid.NewGuid().ToString();
     public string Id

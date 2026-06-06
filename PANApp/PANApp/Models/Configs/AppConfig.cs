@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 
-namespace PANApp.Models;
+namespace PANApp.Models.Configs;
 
-public record AppSettings
+public sealed record AppConfig
 {
     [JsonPropertyName("StartWithWindows")]
     public bool StartWithWindows { get; set; } = false;

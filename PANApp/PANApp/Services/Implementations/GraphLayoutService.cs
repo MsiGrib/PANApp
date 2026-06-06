@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace PANApp.Services.Implementations;
 
-public class GraphLayoutService
+public sealed class GraphLayoutService
 {
     private const double OuterMargin = 140;
     private const double LevelGapX = 800;

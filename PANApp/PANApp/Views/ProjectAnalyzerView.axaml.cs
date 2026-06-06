@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
-using PANApp.Models;
+using PANApp.Models.Configs;
 using PANApp.ViewModels;
 using ReactiveUI;
 using System;
@@ -34,7 +34,7 @@ public partial class ProjectAnalyzerView : ReactiveUserControl<ProjectAnalyzerVi
         });
     }
 
-    private void OnSelectedProfileChanged(ProjectProfile? profile)
+    private void OnSelectedProfileChanged(ProjectProfileConfig? profile)
     {
         _isRestoringZoom = true;
         try

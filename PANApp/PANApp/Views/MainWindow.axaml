@@ -68,7 +68,7 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <Button Content="📊 Анализ проекта"
+                    <Button Content="📊 Project analyze"
                             Classes="nav-btn"
                             Command="{Binding NavigateToAnalyzerCommand}">
                         <Button.Tag>
@@ -78,7 +78,7 @@
                         </Button.Tag>
                     </Button>
 
-                    <Button Content="⚙️ Настройки"
+                    <Button Content="⚙️ Settings"
                             Classes="nav-btn"
                             Command="{Binding NavigateToSettingsCommand}">
                         <Button.Tag>

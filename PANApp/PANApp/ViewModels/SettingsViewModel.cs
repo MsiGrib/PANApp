@@ -1,4 +1,4 @@
-﻿using PANApp.Models;
+﻿using PANApp.Models.Configs;
 using PANApp.Services.Implementations;
 using ReactiveUI;
 using System;
@@ -17,14 +17,14 @@ public class SettingsViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _startWithWindows, value);
     }
 
-    private string _settingsStatus = "Настройки загружены";
+    private string _settingsStatus = "Settings loaded";
     public string SettingsStatus
     {
         get => _settingsStatus;
         set => this.RaiseAndSetIfChanged(ref _settingsStatus, value);
     }
 
-    private AppSettings _currentSettings = null!;
+    private AppConfig _currentSettings = null!;
 
     public ReactiveCommand<Unit, Unit> OnStartWithWindowsChangedCommand { get; }
     public ReactiveCommand<Unit, Unit> ResetToDefaultsCommand { get; }
@@ -50,10 +50,10 @@ public class SettingsViewModel : ViewModelBase
         AppSettingsService.Save(_currentSettings);
         AppSettingsService.ApplyStartWithWindows(StartWithWindows);
 
-        SettingsStatus = $"Сохранено ✓ {DateTime.Now:HH:mm:ss}";
+        SettingsStatus = $"Save ✓ {DateTime.Now:HH:mm:ss}";
 
         _ = Task.Delay(2000).ContinueWith(_ =>
-            SettingsStatus = $"Последнее сохранение: {DateTime.Now:HH:mm:ss}",
+            SettingsStatus = $"Last save: {DateTime.Now:HH:mm:ss}",
             TaskScheduler.FromCurrentSynchronizationContext());
     }
 
@@ -69,7 +69,7 @@ public class SettingsViewModel : ViewModelBase
 
         StartWithWindows = _currentSettings.StartWithWindows;
 
-        SettingsStatus = $"Загружено: {_currentSettings.LastModified:HH:mm:ss}";
+        SettingsStatus = $"Loaded: {_currentSettings.LastModified:HH:mm:ss}";
     }
 
     private void OnStartWithWindowsChanged()
@@ -79,6 +79,6 @@ public class SettingsViewModel : ViewModelBase
     {
         StartWithWindows = false;
         SaveSettings();
-        SettingsStatus = "Сброшено до значений по умолчанию ✓";
+        SettingsStatus = "Reset to default values ✓";
     }
 }

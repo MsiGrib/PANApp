@@ -1,4 +1,4 @@
-﻿using PANApp.Models;
+﻿using PANApp.Models.Configs;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,7 +6,7 @@ using System.Text.Json;
 
 namespace PANApp.Services.Implementations;
 
-public class ProfileService
+public sealed class ProfileService
 {
     private static readonly string ConfigDir = GetConfigDir();
     private readonly string _filePath = Path.Combine(ConfigDir, "profiles.json");
@@ -23,8 +23,6 @@ public class ProfileService
         }
     }
 
-    #region Config paths
-
     private static string GetConfigDir()
     {
         try
@@ -36,7 +34,7 @@ public class ProfileService
             if (!string.IsNullOrEmpty(appData))
                 return Path.Combine(appData, "PANApp");
         }
-        catch { }
+        catch { /* Ignored */ }
 
         if (Environment.OSVersion.Platform == PlatformID.Unix)
         {
@@ -52,9 +50,7 @@ public class ProfileService
         return Path.Combine(AppContext.BaseDirectory, "config");
     }
 
-    #endregion
-
-    public void SaveProfiles(List<ProjectProfile> profiles)
+    public void SaveProfiles(List<ProjectProfileConfig> profiles)
     {
         try
         {
@@ -69,22 +65,22 @@ public class ProfileService
         }
     }
 
-    public List<ProjectProfile> LoadProfiles()
+    public List<ProjectProfileConfig> LoadProfiles()
     {
         try
         {
             if (!File.Exists(_filePath))
-                return new List<ProjectProfile>();
+                return new List<ProjectProfileConfig>();
 
             var json = File.ReadAllText(_filePath);
-            var profiles = JsonSerializer.Deserialize<List<ProjectProfile>>(json);
+            var profiles = JsonSerializer.Deserialize<List<ProjectProfileConfig>>(json);
 
-            return profiles ?? new List<ProjectProfile>();
+            return profiles ?? new List<ProjectProfileConfig>();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[ERROR] Load profiles: {ex.Message}");
-            return new List<ProjectProfile>();
+            return new List<ProjectProfileConfig>();
         }
     }
 }
