@@ -6,11 +6,11 @@
              xmlns:models="using:PANApp.Models"
              xmlns:modelsConfig="using:PANApp.Models.Configs"
              xmlns:az="clr-namespace:Avalonia.Controls.PanAndZoom;assembly=Avalonia.Controls.PanAndZoom"
-             mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+             mc:Ignorable="d" d:DesignWidth="1400" d:DesignHeight="800"
              x:Class="PANApp.Views.ProjectAnalyzerView"
              x:DataType="vm:ProjectAnalyzerViewModel">
 
-    <Grid ColumnDefinitions="300,*" Margin="10">
+    <Grid ColumnDefinitions="300,*,350" Margin="10">
         <Border Grid.Column="0" Background="#252526" BorderBrush="#444" BorderThickness="1" CornerRadius="5" Margin="0,0,10,0">
             <DockPanel>
                 <TextBlock DockPanel.Dock="Top" Text="📁 Project profiles" FontSize="16" FontWeight="Bold" Margin="10" Foreground="White"/>
@@ -46,11 +46,6 @@
                                                    FontSize="11" 
                                                    FontWeight="Bold"
                                                    HorizontalAlignment="Center"/>
-                                        <ToolTip.Tip>
-                                            <Border Background="#1e1e1e" Padding="8,4" CornerRadius="4">
-                                                <TextBlock Text="Graph was analyzed in the current session" Foreground="White"/>
-                                            </Border>
-                                        </ToolTip.Tip>
                                     </Border>
                                 </Grid>
                             </Border>
@@ -62,16 +57,16 @@
 
         <Grid Grid.Column="1" RowDefinitions="Auto,*">
             <Border Grid.Row="0" Background="#252526" BorderBrush="#444" BorderThickness="1" CornerRadius="5" Padding="15" Margin="0,0,0,10"
-                    IsVisible="{Binding SelectedProfile, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    IsVisible="{Binding IsProfileDetailsVisible}">
                 <StackPanel Spacing="10">
                     <TextBlock Text="⚙️ Profile details" FontSize="16" FontWeight="Bold" Foreground="White"/>
 
                     <Grid ColumnDefinitions="100,*" RowDefinitions="Auto,Auto,Auto" Margin="0,10,0,0">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Название:" VerticalAlignment="Center" Foreground="#ccc"/>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Name:" VerticalAlignment="Center" Foreground="#ccc"/>
                         <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding SelectedProfile.Name}" 
                                  Margin="10,0,0,0" Background="#2d2d2d" Foreground="White" BorderBrush="#444"/>
 
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Язык:" VerticalAlignment="Center" Margin="0,10,0,0" Foreground="#ccc"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Language:" VerticalAlignment="Center" Margin="0,10,0,0" Foreground="#ccc"/>
                         <ComboBox Grid.Row="1" Grid.Column="1" Margin="10,10,0,0"
                                   ItemsSource="{Binding AvailableLanguages}"
                                   SelectedItem="{Binding SelectedProfile.Language}"
@@ -97,7 +92,50 @@
                 <DockPanel>
                     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
                         <TextBlock Text="🔗 Module dependency graph" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Foreground="White"/>
-                        <TextBlock Text="(Mouse wheel — Zoom, Right/Middle mouse btn. — Move)" FontSize="11" Foreground="#888" VerticalAlignment="Center"/>
+                        <TextBlock Text="(Click on module to see notes)" FontSize="11" Foreground="#888" VerticalAlignment="Center"/>
+
+                        <Border Width="1" Background="#444" Height="20" VerticalAlignment="Center" Margin="10,0"/>
+
+                        <Button Command="{Binding ShowAllNotesCommand}"
+                                Background="#8e44ad"
+                                Foreground="White"
+                                BorderThickness="0"
+                                CornerRadius="4"
+                                Padding="10,5"
+                                Cursor="Hand">
+                            <Button.Content>
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <TextBlock Text="📋 All notes" VerticalAlignment="Center"/>
+                                    <Border Background="#c0392b" 
+                                            CornerRadius="10" 
+                                            MinWidth="22" 
+                                            Height="22"
+                                            Padding="6,0"
+                                            VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding TotalNotesCount}" 
+                                                   Foreground="White" 
+                                                   FontSize="11" 
+                                                   FontWeight="Bold"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
+                                </StackPanel>
+                            </Button.Content>
+                        </Button>
+
+                        <Button Command="{Binding ToggleProfileDetailsCommand}"
+                                Background="#34495e"
+                                Foreground="White"
+                                BorderThickness="0"
+                                CornerRadius="4"
+                                Padding="10,5"
+                                Cursor="Hand"
+                                ToolTip.Tip="Show/Hide profile details">
+                            <Button.Content>
+                                <TextBlock Text="{Binding IsProfileDetailsVisible, Converter={StaticResource BoolToTextConverter}, ConverterParameter='👁️ Hide|👁️ Show'}"
+                                           VerticalAlignment="Center"/>
+                            </Button.Content>
+                        </Button>
                     </StackPanel>
 
                     <ProgressBar DockPanel.Dock="Bottom" IsIndeterminate="True" IsVisible="{Binding IsAnalyzing}" 
@@ -158,27 +196,61 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="models:GraphNode">
-                                        <Border Width="{Binding Width}"
+                                        <Button Width="{Binding Width}"
                                                 Height="{Binding Height}"
                                                 Margin="{Binding Margin}"
                                                 Background="#2d2d2d"
-                                                CornerRadius="6"
                                                 BorderBrush="#3498db"
-                                                BorderThickness="2">
+                                                BorderThickness="2"
+                                                Cursor="Hand"
+                                                Command="{Binding $parent[UserControl].DataContext.OnNodeClickedCommand}"
+                                                CommandParameter="{Binding}">
+                                            <Button.Styles>
+                                                <Style Selector="Button">
+                                                    <Setter Property="CornerRadius" Value="6"/>
+                                                </Style>
+                                                <Style Selector="Button:pointerover">
+                                                    <Setter Property="BorderBrush" Value="#5dade2"/>
+                                                    <Setter Property="Background" Value="#34495e"/>
+                                                </Style>
+                                            </Button.Styles>
+
                                             <ToolTip.Tip>
                                                 <Border Background="#1e1e1e" Padding="8,4" CornerRadius="4" BorderBrush="#333" BorderThickness="1">
-                                                    <TextBlock Text="{Binding FullName}" Foreground="White" FontSize="12"/>
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding FullName}" Foreground="White" FontSize="12"/>
+                                                        <TextBlock Foreground="#888" FontSize="11" Margin="0,5,0,0">
+                                                            <Run Text="Notes: "/><Run Text="{Binding NoteCount}"/>
+                                                        </TextBlock>
+                                                    </StackPanel>
                                                 </Border>
                                             </ToolTip.Tip>
 
-                                            <TextBlock Text="{Binding DisplayName}"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center"
-                                                       FontWeight="SemiBold"
-                                                       Foreground="White"
-                                                       TextTrimming="CharacterEllipsis"
-                                                       Margin="5,0"/>
-                                        </Border>
+                                            <Grid>
+                                                <TextBlock Text="{Binding DisplayName}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="White"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           Margin="5,0"/>
+                                                
+                                                <Border Background="#e74c3c"
+                                                        CornerRadius="10"
+                                                        Width="24" Height="24"
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Top"
+                                                        Margin="0,-8,-8,0"
+                                                        IsVisible="{Binding NoteCount, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                    <TextBlock Text="{Binding NoteCount}"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"
+                                                               Foreground="White"
+                                                               FontSize="11"
+                                                               FontWeight="Bold"/>
+                                                </Border>
+                                            </Grid>
+                                        </Button>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -188,5 +260,331 @@
                 </DockPanel>
             </Border>
         </Grid>
+
+        <Border Grid.Column="2" 
+                Background="#252526" 
+                BorderBrush="#444" 
+                BorderThickness="1" 
+                CornerRadius="5" 
+                Margin="10,0,0,0"
+                IsVisible="{Binding NoteVm.IsVisible}">
+            <DockPanel>
+                <Border DockPanel.Dock="Top" Background="#1e1e1e" Padding="15" CornerRadius="5,5,0,0">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{Binding NoteVm.PanelTitle}" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="{Binding NoteVm.ModuleName}" FontSize="12" Foreground="#888" Margin="0,5,0,0"/>
+                        </StackPanel>
+                        <Button Grid.Column="1" 
+                                Content="✕" 
+                                Command="{Binding NoteVm.ClosePanelCommand}"
+                                Background="Transparent"
+                                Foreground="#888"
+                                BorderThickness="0"
+                                FontSize="16"
+                                Cursor="Hand"/>
+                    </Grid>
+                </Border>
+
+                <Border DockPanel.Dock="Bottom" Background="#2d2d2d" Padding="15" CornerRadius="0,0,5,5"
+                        IsVisible="{Binding !NoteVm.IsAllNotesMode}">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="{Binding NoteVm.FormTitle}"
+                                   FontWeight="SemiBold" Foreground="White"/>
+                
+                        <TextBox Text="{Binding NoteVm.NewTitle, Mode=TwoWay}"
+                                 Watermark="Title..."
+                                 Background="#1e1e1e" Foreground="White" BorderBrush="#444"/>
+                
+                        <TextBox Text="{Binding NoteVm.NewDescription, Mode=TwoWay}"
+                                 Watermark="Description..."
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 Height="80"
+                                 Background="#1e1e1e" Foreground="White" BorderBrush="#444"/>
+                
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <Button Content="{Binding NoteVm.SubmitButtonText}"
+                                    Command="{Binding NoteVm.SubmitCommand}"
+                                    Classes="action-btn" Background="#27ae60" Padding="10,5"/>
+                    
+                            <Button Content="❌ Cancel"
+                                    Command="{Binding NoteVm.CancelEditCommand}"
+                                    Classes="action-btn" Background="#95a5a6" Padding="10,5"
+                                    IsVisible="{Binding NoteVm.IsEditing}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding NoteVm.Notes}" Margin="10">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="models:Note">
+                                <Button Classes="note-card"
+                                        Command="{Binding $parent[UserControl].DataContext.NoteVm.ViewNoteDetailsCommand}"
+                                        CommandParameter="{Binding}"
+                                        Margin="0,0,0,10"
+                                        Padding="0">
+                            
+                                    <Border Background="#2d2d2d" 
+                                            CornerRadius="4" 
+                                            Padding="10"
+                                            BorderBrush="#444"
+                                            BorderThickness="1">
+                                        <StackPanel Spacing="5">
+                                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                                <Border Grid.Column="0" 
+                                                        Background="#3498db" 
+                                                        CornerRadius="4" 
+                                                        Padding="6,2"
+                                                        Margin="0,0,8,0"
+                                                        VerticalAlignment="Center">
+                                                    <TextBlock Foreground="White" FontSize="11" FontWeight="Bold">
+                                                        <Run Text="#"/><Run Text="{Binding NoteNumber}"/>
+                                                    </TextBlock>
+                                                </Border>
+                                        
+                                                <TextBlock Grid.Column="1" 
+                                                           Text="{Binding Title}" 
+                                                           FontWeight="SemiBold" 
+                                                           Foreground="White"
+                                                           TextWrapping="Wrap"
+                                                           VerticalAlignment="Center"/>
+                                        
+                                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="5">
+                                                    <Button Content="✏️"
+                                                            Command="{Binding $parent[UserControl].DataContext.NoteVm.StartEditNoteCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            Background="Transparent"
+                                                            BorderThickness="0"
+                                                            Cursor="Hand"
+                                                            ToolTip.Tip="Edit"
+                                                            IsVisible="{Binding !$parent[UserControl].DataContext.NoteVm.IsAllNotesMode}"/>
+                                                    <Button Content="🗑️"
+                                                            Command="{Binding $parent[UserControl].DataContext.NoteVm.DeleteNoteCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            Background="Transparent"
+                                                            BorderThickness="0"
+                                                            Cursor="Hand"
+                                                            ToolTip.Tip="Delete"/>
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <Border Background="#1e1e1e" 
+                                                    CornerRadius="3" 
+                                                    Padding="6,2"
+                                                    HorizontalAlignment="Left"
+                                                    IsVisible="{Binding $parent[UserControl].DataContext.NoteVm.IsAllNotesMode}">
+                                                <TextBlock Foreground="#8ab4f8" FontSize="11">
+                                                    <Run Text="📦 Module: "/><Run Text="{Binding ModuleName}"/>
+                                                </TextBlock>
+                                            </Border>
+                                    
+                                            <TextBlock Text="{Binding Description}" 
+                                                       Foreground="#ccc"
+                                                       TextWrapping="Wrap"
+                                                       FontSize="12"
+                                                       MaxHeight="60"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                    
+                                            <TextBlock Text="{Binding CreatedAt, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}"
+                                                       Foreground="#888"
+                                                       FontSize="10"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+
+        <Panel Grid.ColumnSpan="3"
+               IsVisible="{Binding NoteVm.IsDetailsPopupOpen}"
+               HorizontalAlignment="Stretch"
+               VerticalAlignment="Stretch">
+    
+            <Border x:Name="PopupOverlay"
+                    Background="#CC000000"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"/>
+
+            <Border Background="#252526"
+                    BorderBrush="#3498db"
+                    BorderThickness="2"
+                    CornerRadius="8"
+                    Width="600"
+                    MaxHeight="700"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Padding="20">
+        
+                <DockPanel>
+                    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,15">
+                        <StackPanel Grid.Column="0">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Border Background="#3498db" 
+                                        CornerRadius="6" 
+                                        Padding="10,4">
+                                    <TextBlock Foreground="White" FontSize="14" FontWeight="Bold">
+                                        <Run Text="#"/><Run Text="{Binding NoteVm.NoteForDetails.NoteNumber}"/>
+                                    </TextBlock>
+                                </Border>
+                                <TextBlock Text="{Binding NoteVm.IsEditingInPopup, Converter={StaticResource BoolToTextConverter}, ConverterParameter='Edit note|Note details'}" 
+                                           FontSize="18" 
+                                           FontWeight="Bold" 
+                                           Foreground="White"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <Button Grid.Column="1" 
+                                Content="✕" 
+                                Command="{Binding NoteVm.CloseDetailsPopupCommand}"
+                                Background="Transparent"
+                                Foreground="#888"
+                                BorderThickness="0"
+                                FontSize="20"
+                                Cursor="Hand"/>
+                    </Grid>
+
+                    <StackPanel DockPanel.Dock="Bottom" 
+                                Orientation="Horizontal" 
+                                HorizontalAlignment="Right" 
+                                Spacing="10" 
+                                Margin="0,15,0,0">
+                
+                        <StackPanel Orientation="Horizontal" Spacing="10"
+                                    IsVisible="{Binding !NoteVm.IsEditingInPopup}">
+                            <Button Content="🗑️ Delete"
+                                    Command="{Binding NoteVm.DeleteNoteCommand}"
+                                    CommandParameter="{Binding NoteVm.NoteForDetails}"
+                                    Classes="action-btn" 
+                                    Background="#c0392b" 
+                                    Padding="12,6"/>
+                            <Button Content="✏️ Edit"
+                                    Command="{Binding NoteVm.StartEditInPopupCommand}"
+                                    Classes="action-btn" 
+                                    Background="#f39c12" 
+                                    Padding="12,6"/>
+                            <Button Content="Close"
+                                    Command="{Binding NoteVm.CloseDetailsPopupCommand}"
+                                    Classes="action-btn" 
+                                    Background="#95a5a6" 
+                                    Padding="12,6"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Spacing="10"
+                                    IsVisible="{Binding NoteVm.IsEditingInPopup}">
+                            <Button Content="💾 Save"
+                                    Command="{Binding NoteVm.SaveEditInPopupCommand}"
+                                    Classes="action-btn" 
+                                    Background="#27ae60" 
+                                    Padding="12,6"/>
+                            <Button Content="❌ Cancel"
+                                    Command="{Binding NoteVm.CancelEditInPopupCommand}"
+                                    Classes="action-btn" 
+                                    Background="#95a5a6" 
+                                    Padding="12,6"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Spacing="15">
+                    
+                            <StackPanel Spacing="15" DataContext="{Binding NoteVm.NoteForDetails}"
+                                        IsVisible="{Binding !$parent[UserControl].DataContext.NoteVm.IsEditingInPopup}">
+                                <TextBlock Text="{Binding Title}" 
+                                           FontSize="20" 
+                                           FontWeight="Bold" 
+                                           Foreground="White"
+                                           TextWrapping="Wrap"/>
+
+                                <Border Background="#1e1e1e" CornerRadius="6" Padding="12">
+                                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" Margin="0">
+                                        <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,5">
+                                            <TextBlock Text="Module" Foreground="#888" FontSize="11"/>
+                                            <Border Background="#2d2d2d" CornerRadius="4" Padding="8,4" HorizontalAlignment="Left">
+                                                <TextBlock Foreground="#8ab4f8" FontSize="12">
+                                                    <Run Text="📦 "/><Run Text="{Binding ModuleName}"/>
+                                                </TextBlock>
+                                            </Border>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Row="0" Grid.Column="1" Margin="10,0,0,5">
+                                            <TextBlock Text="Created" Foreground="#888" FontSize="11"/>
+                                            <TextBlock Text="{Binding CreatedAt, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}"
+                                                       Foreground="White" FontSize="12"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,5,0,0">
+                                            <TextBlock Text="Note ID" Foreground="#888" FontSize="11"/>
+                                            <TextBlock Text="{Binding Id}" Foreground="#888" FontSize="10" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <Border Background="#1e1e1e" CornerRadius="6" Padding="15">
+                                    <StackPanel>
+                                        <TextBlock Text="Description" Foreground="#888" FontSize="11" Margin="0,0,0,8"/>
+                                        <TextBlock Text="{Binding Description}" 
+                                                   Foreground="White" 
+                                                   FontSize="14"
+                                                   TextWrapping="Wrap"
+                                                   LineHeight="22"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Spacing="15"
+                                        IsVisible="{Binding NoteVm.IsEditingInPopup}">
+                                <TextBox Text="{Binding NoteVm.PopupEditTitle, Mode=TwoWay}"
+                                         Watermark="Title..."
+                                         Background="#1e1e1e" 
+                                         Foreground="White" 
+                                         BorderBrush="#444"
+                                         FontSize="18"
+                                         FontWeight="Bold"/>
+
+                                <Border Background="#1e1e1e" CornerRadius="6" Padding="12">
+                                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto" Margin="0">
+                                        <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,0">
+                                            <TextBlock Text="Module" Foreground="#888" FontSize="11"/>
+                                            <Border Background="#2d2d2d" CornerRadius="4" Padding="8,4" HorizontalAlignment="Left">
+                                                <TextBlock Foreground="#8ab4f8" FontSize="12">
+                                                    <Run Text="📦 "/><Run Text="{Binding NoteVm.NoteForDetails.ModuleName}"/>
+                                                </TextBlock>
+                                            </Border>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Row="0" Grid.Column="1" Margin="10,0,0,0">
+                                            <TextBlock Text="Created" Foreground="#888" FontSize="11"/>
+                                            <TextBlock Text="{Binding NoteVm.NoteForDetails.CreatedAt, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}"
+                                                       Foreground="White" FontSize="12"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <Border Background="#1e1e1e" CornerRadius="6" Padding="15">
+                                    <StackPanel>
+                                        <TextBlock Text="Description" Foreground="#888" FontSize="11" Margin="0,0,0,8"/>
+                                        <TextBox Text="{Binding NoteVm.PopupEditDescription, Mode=TwoWay}"
+                                                 Watermark="Description..."
+                                                 AcceptsReturn="True"
+                                                 TextWrapping="Wrap"
+                                                 MinHeight="200"
+                                                 Background="Transparent"
+                                                 Foreground="White" 
+                                                 BorderBrush="#444"
+                                                 FontSize="14"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                        </StackPanel>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+        </Panel>
     </Grid>
 </UserControl>

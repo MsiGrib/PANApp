@@ -17,6 +17,7 @@
         <converters:NotEmptyConverter x:Key="NotEmptyConverter"/>
         <converters:StringEqualsConverter x:Key="StringEqualsConverter"/>
         <converters:SimpleBoolConverter x:Key="SimpleBoolConverter"/>
+        <converters:BoolToTextConverter x:Key="BoolToTextConverter"/>
     </Application.Resources>
 
 </Application>

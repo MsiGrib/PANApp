@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.ReactiveUI;
 using PANApp.Models.Configs;
 using PANApp.ViewModels;
@@ -27,11 +28,20 @@ public partial class ProjectAnalyzerView : ReactiveUserControl<ProjectAnalyzerVi
 
             GraphZoomBorder.ZoomChanged += OnZoomOrPanChanged;
 
+            PopupOverlay.PointerPressed += OnPopupOverlayClicked;
+
             Disposable.Create(() =>
             {
                 GraphZoomBorder.ZoomChanged -= OnZoomOrPanChanged;
+                PopupOverlay.PointerPressed -= OnPopupOverlayClicked;
             }).DisposeWith(disposables);
         });
+    }
+
+    private void OnPopupOverlayClicked(object? sender, PointerPressedEventArgs e)
+    {
+        if (ViewModel?.NoteVm != null && ViewModel.NoteVm.IsDetailsPopupOpen)
+            ViewModel.NoteVm.CloseDetailsPopupCommand.Execute().Subscribe();
     }
 
     private void OnSelectedProfileChanged(ProjectProfileConfig? profile)
@@ -40,13 +50,8 @@ public partial class ProjectAnalyzerView : ReactiveUserControl<ProjectAnalyzerVi
         try
         {
             if (profile != null && profile.HasAnalyzedGraph)
-            {
                 GraphZoomBorder.SetMatrix(profile.TransformMatrix);
-            }
-            else
-            {
-                GraphZoomBorder.ResetMatrix();
-            }
+            else GraphZoomBorder.ResetMatrix();
         }
         finally
         {
@@ -78,13 +83,7 @@ public partial class ProjectAnalyzerView : ReactiveUserControl<ProjectAnalyzerVi
                 AllowMultiple = false
             });
 
-        if (result.Count > 0)
-        {
-            interaction.SetOutput(result[0].Path.LocalPath);
-        }
-        else
-        {
-            interaction.SetOutput(string.Empty);
-        }
+        if (result.Count > 0) interaction.SetOutput(result[0].Path.LocalPath);
+        else interaction.SetOutput(string.Empty);
     }
 }

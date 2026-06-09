@@ -5,12 +5,12 @@
         xmlns:converters="using:PANApp.Converters"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+        mc:Ignorable="d" d:DesignWidth="1350" d:DesignHeight="800"
         x:Class="PANApp.Views.MainWindow"
         x:Name="RootWindow"
         x:DataType="vm:MainViewModel"
-        Title="Dependency Analyzer" Width="800" Height="700"
-        MinWidth="400" MinHeight="300"
+        Title="Dependency Analyzer" Width="1350" Height="700"
+        MinWidth="800" MinHeight="300"
         WindowStartupLocation="CenterScreen"
         Background="#1a1a1a"
         Icon="/Assets/avalonia-logo.ico">
@@ -56,6 +56,18 @@
         <Style Selector="Button.action-btn:disabled">
             <Setter Property="Opacity" Value="0.5"/>
             <Setter Property="Cursor" Value="Arrow"/>
+        </Style>
+
+        <Style Selector="Button.note-card">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        </Style>
+        <Style Selector="Button.note-card:pointerover Border">
+            <Setter Property="BorderBrush" Value="#3498db"/>
+            <Setter Property="Background" Value="#34495e"/>
         </Style>
     </Window.Styles>
 

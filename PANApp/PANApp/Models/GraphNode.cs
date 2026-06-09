@@ -3,7 +3,7 @@ using ReactiveUI;
 
 namespace PANApp.Models;
 
-public sealed class GraphNode : ReactiveObject
+public class GraphNode : ReactiveObject
 {
     private string _id = string.Empty;
     public string Id
@@ -30,26 +30,25 @@ public sealed class GraphNode : ReactiveObject
     public double X
     {
         get => _x;
-        set
-        {
-            this.RaiseAndSetIfChanged(ref _x, value);
-            this.RaisePropertyChanged(nameof(Margin));
-        }
+        set => this.RaiseAndSetIfChanged(ref _x, value);
     }
 
     private double _y;
     public double Y
     {
         get => _y;
-        set
-        {
-            this.RaiseAndSetIfChanged(ref _y, value);
-            this.RaisePropertyChanged(nameof(Margin));
-        }
+        set => this.RaiseAndSetIfChanged(ref _y, value);
     }
 
     public double Width { get; set; } = 140;
     public double Height { get; set; } = 45;
 
     public Thickness Margin => new Thickness(X, Y, 0, 0);
+
+    private int _noteCount;
+    public int NoteCount
+    {
+        get => _noteCount;
+        set => this.RaiseAndSetIfChanged(ref _noteCount, value);
+    }
 }

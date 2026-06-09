@@ -14,93 +14,139 @@ public sealed class NoteService : IDisposable
         _dbContext = new SQLiteContext();
     }
 
-    public List<Note> GetAllNotes()
+    public List<Note> GetNotesByModule(string profileId, string moduleId)
     {
         var notes = new List<Note>();
 
         try
         {
             using var command = _dbContext.GetConnection().CreateCommand();
-
-            command.CommandText = "SELECT Id, Title, Description, CreatedAt FROM Notes ORDER BY CreatedAt DESC;";
+            command.CommandText = """
+                SELECT Id, NoteNumber, Title, Description, CreatedAt, ProfileId, ModuleId 
+                FROM Notes 
+                WHERE ProfileId = @profileId AND ModuleId = @moduleId
+                ORDER BY NoteNumber DESC;
+                """;
+            command.Parameters.AddWithValue("@profileId", profileId);
+            command.Parameters.AddWithValue("@moduleId", moduleId);
 
             using var reader = command.ExecuteReader();
             while (reader.Read())
             {
-                notes.Add(new Note
-                {
-                    Id = Guid.Parse(reader.GetString(0)),
-                    Title = reader.GetString(1),
-                    Description = reader.GetString(2),
-                    CreatedAt = DateTime.Parse(reader.GetString(3)).ToUniversalTime()
-                });
+                notes.Add(ReadNote(reader));
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ERROR] GetAllNotes: {ex.Message}");
+            Console.WriteLine($"[ERROR] GetNotesByModule: {ex.Message}");
         }
 
         return notes;
     }
 
-    public Note? GetNoteById(Guid id)
+    public List<Note> GetNotesByProfile(string profileId)
     {
+        var notes = new List<Note>();
+
         try
         {
             using var command = _dbContext.GetConnection().CreateCommand();
-
-            command.CommandText = "SELECT Id, Title, Description, CreatedAt FROM Notes WHERE Id = @id;";
-            command.Parameters.AddWithValue("@id", id.ToString());
+            command.CommandText = """
+                SELECT Id, NoteNumber, Title, Description, CreatedAt, ProfileId, ModuleId 
+                FROM Notes 
+                WHERE ProfileId = @profileId
+                ORDER BY NoteNumber DESC;
+                """;
+            command.Parameters.AddWithValue("@profileId", profileId);
 
             using var reader = command.ExecuteReader();
-            if (reader.Read())
+            while (reader.Read())
             {
-                return new Note
-                {
-                    Id = Guid.Parse(reader.GetString(0)),
-                    Title = reader.GetString(1),
-                    Description = reader.GetString(2),
-                    CreatedAt = DateTime.Parse(reader.GetString(3)).ToUniversalTime()
-                };
+                notes.Add(ReadNote(reader));
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ERROR] GetNoteById: {ex.Message}");
+            Console.WriteLine($"[ERROR] GetNotesByProfile: {ex.Message}");
         }
 
-        return null;
+        return notes;
     }
 
-    public Note AddNote(string title, string description)
+    public int GetNoteCountByModule(string profileId, string moduleId)
     {
+        try
+        {
+            using var command = _dbContext.GetConnection().CreateCommand();
+            command.CommandText = """
+                SELECT COUNT(*) FROM Notes 
+                WHERE ProfileId = @profileId AND ModuleId = @moduleId;
+                """;
+            command.Parameters.AddWithValue("@profileId", profileId);
+            command.Parameters.AddWithValue("@moduleId", moduleId);
+
+            return Convert.ToInt32(command.ExecuteScalar());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] GetNoteCountByModule: {ex.Message}");
+            return 0;
+        }
+    }
+
+    public int GetNoteCountByProfile(string profileId)
+    {
+        try
+        {
+            using var command = _dbContext.GetConnection().CreateCommand();
+            command.CommandText = "SELECT COUNT(*) FROM Notes WHERE ProfileId = @profileId;";
+            command.Parameters.AddWithValue("@profileId", profileId);
+
+            return Convert.ToInt32(command.ExecuteScalar());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] GetNoteCountByProfile: {ex.Message}");
+            return 0;
+        }
+    }
+
+    public Note AddNoteToModule(string profileId, string moduleId, string moduleName, string title, string description)
+    {
+        var noteNumber = GetNextNoteNumber(profileId);
+
         var note = new Note
         {
             Title = title,
             Description = description,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            ProfileId = profileId,
+            ModuleId = moduleId,
+            ModuleName = moduleName,
+            NoteNumber = noteNumber
         };
 
         try
         {
             using var command = _dbContext.GetConnection().CreateCommand();
-
             command.CommandText = """
-                INSERT INTO Notes (Id, Title, Description, CreatedAt)
-                VALUES (@id, @title, @description, @createdAt);
+                INSERT INTO Notes (Id, NoteNumber, Title, Description, CreatedAt, ProfileId, ModuleId)
+                VALUES (@id, @noteNumber, @title, @description, @createdAt, @profileId, @moduleId);
                 """;
             command.Parameters.AddWithValue("@id", note.Id.ToString());
+            command.Parameters.AddWithValue("@noteNumber", note.NoteNumber);
             command.Parameters.AddWithValue("@title", note.Title);
             command.Parameters.AddWithValue("@description", note.Description);
             command.Parameters.AddWithValue("@createdAt", note.CreatedAt.ToString("O"));
+            command.Parameters.AddWithValue("@profileId", profileId);
+            command.Parameters.AddWithValue("@moduleId", moduleId);
 
             command.ExecuteNonQuery();
-            Console.WriteLine($"[NOTE] Added: {note.Title} (Id={note.Id})");
+            Console.WriteLine($"[NOTE] Added #{note.NoteNumber} to module {moduleId}: {note.Title}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ERROR] AddNote: {ex.Message}");
+            Console.WriteLine($"[ERROR] AddNoteToModule: {ex.Message}");
         }
 
         return note;
@@ -111,7 +157,6 @@ public sealed class NoteService : IDisposable
         try
         {
             using var command = _dbContext.GetConnection().CreateCommand();
-
             command.CommandText = """
                 UPDATE Notes
                 SET Title = @title, Description = @description
@@ -137,7 +182,6 @@ public sealed class NoteService : IDisposable
         try
         {
             using var command = _dbContext.GetConnection().CreateCommand();
-
             command.CommandText = "DELETE FROM Notes WHERE Id = @id;";
             command.Parameters.AddWithValue("@id", id.ToString());
 
@@ -151,6 +195,40 @@ public sealed class NoteService : IDisposable
             return false;
         }
     }
+
+    private long GetNextNoteNumber(string profileId)
+    {
+        try
+        {
+            using var command = _dbContext.GetConnection().CreateCommand();
+            command.CommandText = """
+                SELECT COALESCE(MAX(NoteNumber), 0) + 1 
+                FROM Notes WHERE ProfileId = @profileId;
+                """;
+            command.Parameters.AddWithValue("@profileId", profileId);
+
+            var result = command.ExecuteScalar();
+            return result != null ? Convert.ToInt64(result) : 1;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] GetNextNoteNumber: {ex.Message}");
+            return 1;
+        }
+    }
+
+    private static Note ReadNote(Microsoft.Data.Sqlite.SqliteDataReader reader)
+        => new Note
+        {
+            Id = Guid.Parse(reader.GetString(0)),
+            NoteNumber = reader.GetInt64(1),
+            Title = reader.GetString(2),
+            Description = reader.GetString(3),
+            CreatedAt = DateTime.Parse(reader.GetString(4)).ToUniversalTime(),
+            ProfileId = reader.GetString(5),
+            ModuleId = reader.GetString(6),
+            ModuleName = string.Empty
+        };
 
     public void Dispose()
         => _dbContext.Dispose();

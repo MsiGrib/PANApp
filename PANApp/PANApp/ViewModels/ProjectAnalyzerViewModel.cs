@@ -16,6 +16,7 @@ public class ProjectAnalyzerViewModel : ViewModelBase
 {
     private readonly ProfileService _profileService;
     private readonly ProjectAnalyzerService _analyzerService;
+    private readonly NoteService _noteService;
 
     private ObservableCollection<ProjectProfileConfig> _profiles;
     public ObservableCollection<ProjectProfileConfig> Profiles
@@ -66,6 +67,29 @@ public class ProjectAnalyzerViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _graphCanvasHeight, value);
     }
 
+    private GraphNode? _selectedNode;
+    public GraphNode? SelectedNode
+    {
+        get => _selectedNode;
+        set => this.RaiseAndSetIfChanged(ref _selectedNode, value);
+    }
+
+    private int _totalNotesCount;
+    public int TotalNotesCount
+    {
+        get => _totalNotesCount;
+        set => this.RaiseAndSetIfChanged(ref _totalNotesCount, value);
+    }
+
+    private bool _isProfileDetailsVisible = true;
+    public bool IsProfileDetailsVisible
+    {
+        get => _isProfileDetailsVisible;
+        set => this.RaiseAndSetIfChanged(ref _isProfileDetailsVisible, value);
+    }
+
+    public NoteViewModel NoteVm { get; }
+
     public List<string> AvailableLanguages { get; } =
     [
         "C#",
@@ -77,6 +101,9 @@ public class ProjectAnalyzerViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> SaveProfilesCommand { get; }
     public ReactiveCommand<Unit, Unit> AnalyzeProjectCommand { get; }
     public ReactiveCommand<Unit, Unit> BrowseFolderCommand { get; }
+    public ReactiveCommand<GraphNode, Unit> OnNodeClickedCommand { get; }
+    public ReactiveCommand<Unit, Unit> ShowAllNotesCommand { get; }
+    public ReactiveCommand<Unit, Unit> ToggleProfileDetailsCommand { get; }
 
     public Interaction<string, string> BrowseFolder { get; }
 
@@ -84,6 +111,9 @@ public class ProjectAnalyzerViewModel : ViewModelBase
     {
         _profileService = new ProfileService();
         _analyzerService = new ProjectAnalyzerService();
+        _noteService = new NoteService();
+
+        NoteVm = new NoteViewModel(OnNotesChanged);
 
         Profiles = new ObservableCollection<ProjectProfileConfig>(_profileService.LoadProfiles());
         GraphNodes = new ObservableCollection<GraphNode>();
@@ -111,31 +141,77 @@ public class ProjectAnalyzerViewModel : ViewModelBase
         SaveProfilesCommand = ReactiveCommand.Create(SaveProfiles);
         AnalyzeProjectCommand = ReactiveCommand.CreateFromTask(AnalyzeProjectAsync, canAnalyze);
         BrowseFolderCommand = ReactiveCommand.CreateFromTask(BrowseFolderAsync, canBrowseOrDelete);
+        OnNodeClickedCommand = ReactiveCommand.Create<GraphNode>(OnNodeClicked);
+        ShowAllNotesCommand = ReactiveCommand.Create(ShowAllNotes, canBrowseOrDelete);
+        ToggleProfileDetailsCommand = ReactiveCommand.Create(ToggleProfileDetails);
 
         this.WhenAnyValue(x => x.SelectedProfile)
             .Subscribe(LoadGraphFromProfile);
     }
 
+    private void ToggleProfileDetails()
+        => IsProfileDetailsVisible = !IsProfileDetailsVisible;
+
     private void LoadGraphFromProfile(ProjectProfileConfig profile)
     {
         GraphNodes.Clear();
         GraphEdges.Clear();
+        NoteVm.ClosePanel();
 
         if (profile == null || !profile.HasAnalyzedGraph)
         {
             GraphCanvasWidth = 1200;
             GraphCanvasHeight = 800;
+            TotalNotesCount = 0;
             return;
         }
 
         foreach (var node in profile.AnalyzedNodes)
+        {
+            node.NoteCount = _noteService.GetNoteCountByModule(profile.Id, node.Id);
             GraphNodes.Add(node);
+        }
 
         foreach (var edge in profile.AnalyzedEdges)
             GraphEdges.Add(edge);
 
         GraphCanvasWidth = profile.CanvasWidth;
         GraphCanvasHeight = profile.CanvasHeight;
+
+        TotalNotesCount = _noteService.GetNoteCountByProfile(profile.Id);
+    }
+
+    private void OnNodeClicked(GraphNode node)
+    {
+        if (SelectedProfile == null || node == null) return;
+
+        SelectedNode = node;
+        NoteVm.LoadNotesForModule(SelectedProfile.Id, node.Id, node.DisplayName);
+    }
+
+    private void ShowAllNotes()
+    {
+        if (SelectedProfile == null) return;
+
+        NoteVm.LoadAllNotesForProfile(SelectedProfile.Id, SelectedProfile.Name);
+
+        NoteVm.UpdateModuleNames(moduleId =>
+        {
+            var node = SelectedProfile.AnalyzedNodes.FirstOrDefault(n => n.Id == moduleId);
+            return node?.DisplayName ?? moduleId;
+        });
+    }
+
+    private void OnNotesChanged()
+    {
+        if (SelectedProfile == null) return;
+
+        foreach (var node in GraphNodes)
+            node.NoteCount = _noteService.GetNoteCountByModule(SelectedProfile.Id, node.Id);
+
+        TotalNotesCount = _noteService.GetNoteCountByProfile(SelectedProfile.Id);
+
+        if (NoteVm.IsAllNotesMode) ShowAllNotes();
     }
 
     private void CreateProfile()
@@ -197,11 +273,18 @@ public class ProjectAnalyzerViewModel : ViewModelBase
                 GraphNodes.Clear();
                 GraphEdges.Clear();
 
-                foreach (var node in nodes) GraphNodes.Add(node);
+                foreach (var node in nodes)
+                {
+                    node.NoteCount = _noteService.GetNoteCountByModule(SelectedProfile.Id, node.Id);
+                    GraphNodes.Add(node);
+                }
+
                 foreach (var edge in edges) GraphEdges.Add(edge);
 
                 GraphCanvasWidth = SelectedProfile.CanvasWidth;
                 GraphCanvasHeight = SelectedProfile.CanvasHeight;
+
+                TotalNotesCount = _noteService.GetNoteCountByProfile(SelectedProfile.Id);
             });
         }
         finally
