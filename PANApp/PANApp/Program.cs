@@ -10,7 +10,7 @@ namespace PANApp;
 
 internal class Program
 {
-    private static readonly bool IsNeedRootPermission = false;
+    private static readonly bool IsNeedRootPermission = true;
     private static readonly string LogPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "PANApp", "startup.log"

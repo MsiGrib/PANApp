@@ -3,7 +3,7 @@
              x:Class="PANApp.App"
              xmlns:local="using:PANApp"
              xmlns:converters="using:PANApp.Converters"
-             RequestedThemeVariant="Default">
+             RequestedThemeVariant="Dark">
 
     <Application.DataTemplates>
         <local:ViewLocator/>
