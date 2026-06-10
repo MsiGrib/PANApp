@@ -1,8 +1,8 @@
 ﻿using PANApp.Comparers;
 using PANApp.Models;
 using PANApp.Models.Configs;
-using PANApp.Services.Implementations.LanguageAnalyzers;
 using PANApp.Services.Implementations.LanguageAnalyzers.CSharp;
+using PANApp.Services.Implementations.LanguageAnalyzers.Python;
 using PANApp.Services.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -13,16 +13,25 @@ namespace PANApp.Services.Implementations;
 
 public sealed class ProjectAnalyzerService
 {
+    public IReadOnlyList<string> SupportedLanguages => _analyzers.Keys.ToList().AsReadOnly();
+
     private readonly Dictionary<string, ILanguageAnalyzer> _analyzers;
 
     public ProjectAnalyzerService()
     {
-        _analyzers = new Dictionary<string, ILanguageAnalyzer>(StringComparer.OrdinalIgnoreCase)
+        var analyzerInstances = new ILanguageAnalyzer[]
         {
-            { "C#", new CSharpLanguageAnalyzer() },
-            { "C# Avalonia/WPF", new CSharpAvaloniaWpfLanguageAnalyzer() },
-            { "Python", new PythonLanguageAnalyzer() }
+            new CSharpLanguageAnalyzer(),
+            new CSharpAvaloniaWpfLanguageAnalyzer(),
+            new CSharpBlazorLanguageAnalyzer(),
+            new PythonLanguageAnalyzer()
         };
+
+        _analyzers = analyzerInstances.ToDictionary(
+            a => a.Language,
+            a => a,
+            StringComparer.OrdinalIgnoreCase
+        );
     }
 
     public (List<GraphNode> Nodes, List<GraphEdge> Edges, double Width, double Height) AnalyzeGraph(ProjectProfileConfig profile)

@@ -1,4 +1,5 @@
-﻿using PANApp.Models;
+﻿using PANApp.Datas;
+using PANApp.Models;
 using PANApp.Services.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ public sealed class CSharpAvaloniaWpfLanguageAnalyzer : ILanguageAnalyzer
     private static readonly Regex XamlTypeReferenceRegex =
         new(@"\{x:(?:Type|Static)\s+(?<prefix>[\w\-]+):(?<type>[\w_][\w\d_]*)\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    public string Language => "C# Avalonia/WPF";
+    public string Language => AvailableLanguagesData.CSharpAvaloniaWPF;
 
     public List<FileAnalysisResult> AnalyzeProject(string basePath)
     {

@@ -90,11 +90,7 @@ public class ProjectAnalyzerViewModel : ViewModelBase
 
     public NoteViewModel NoteVm { get; }
 
-    public List<string> AvailableLanguages { get; } =
-    [
-        "C#",
-        "C# Avalonia/WPF"
-    ];
+    public IReadOnlyList<string> AvailableLanguages => _analyzerService.SupportedLanguages;
 
     public ReactiveCommand<Unit, Unit> CreateProfileCommand { get; }
     public ReactiveCommand<Unit, Unit> DeleteProfileCommand { get; }

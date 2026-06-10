@@ -1,4 +1,5 @@
-﻿using PANApp.Models;
+﻿using PANApp.Datas;
+using PANApp.Models;
 using PANApp.Services.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ namespace PANApp.Services.Implementations.LanguageAnalyzers.CSharp;
 
 public sealed class CSharpLanguageAnalyzer : ILanguageAnalyzer
 {
-    public string Language => "C#";
+    public string Language => AvailableLanguagesData.CSharp;
 
     public List<FileAnalysisResult> AnalyzeProject(string basePath)
     {
